@@ -33,8 +33,12 @@ fi
 # container does not create (no systemd tmpfiles).
 $SUDO mkdir -p /run/sshd
 
-# JS workspace deps and the shared packages the renderer imports.
-npm install --no-audit --no-fund
+# JS workspace deps (npm ci keeps package-lock.json untouched; skipped when the
+# cached node_modules already matches the lockfile) and the shared packages the
+# renderer imports.
+if [ ! -f node_modules/.package-lock.json ] || [ package-lock.json -nt node_modules/.package-lock.json ]; then
+  npm ci --no-audit --no-fund
+fi
 npm run build:packages
 
 # Warm the Rust dependency cache so later builds only compile FileTerm itself.
