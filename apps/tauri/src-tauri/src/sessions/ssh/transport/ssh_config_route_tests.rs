@@ -180,3 +180,107 @@ fn agent_socket_prefers_identity_agent_then_setting() {
     let disabled = serde_json::json!({"sshConfigResolved": {"agent": "disabled"}});
     assert!(super::ssh_config_agent_disabled(&disabled));
 }
+
+/// End-to-end: an alias whose IdentityFile is only a `.pub` file logs in to a
+/// real sshd through a real ssh-agent holding the private key, with
+/// `IdentitiesOnly yes` skipping an unrelated agent key.
+#[cfg(unix)]
+#[tokio::test]
+async fn real_openssh_ssh_config_alias_signs_with_agent_from_public_key() {
+    let fixture = start_openssh_fixture();
+    wait_for_openssh(fixture.port).await;
+    let socket = fixture.root.join("agent.sock");
+    let mut agent_process = std::process::Command::new("/usr/bin/ssh-agent")
+        .args(["-D", "-a"])
+        .arg(&socket)
+        .stdout(std::process::Stdio::null())
+        .stderr(std::process::Stdio::null())
+        .spawn()
+        .expect("ssh-agent is required for this test");
+    for _ in 0..40 {
+        if socket.exists() {
+            break;
+        }
+        tokio::time::sleep(Duration::from_millis(50)).await;
+    }
+    let decoy = fixture.root.join("decoy-key");
+    let keygen = std::process::Command::new("/usr/bin/ssh-keygen")
+        .args(["-q", "-t", "ed25519", "-N", "", "-f"])
+        .arg(&decoy)
+        .output()
+        .unwrap();
+    assert!(keygen.status.success());
+    for key in [&decoy, &fixture.client_key] {
+        let added = std::process::Command::new("/usr/bin/ssh-add")
+            .arg(key)
+            .env("SSH_AUTH_SOCK", &socket)
+            .output()
+            .unwrap();
+        assert!(
+            added.status.success(),
+            "{}",
+            String::from_utf8_lossy(&added.stderr)
+        );
+    }
+    // The config only knows the public half, like a password-manager agent setup.
+    let public_only = fixture.root.join("login.pub");
+    std::fs::copy(fixture.client_key.with_extension("pub"), &public_only).unwrap();
+    let (home, environment) = ssh_config_test_environment(&format!(
+        "Host *\n  IdentitiesOnly yes\nHost fixture\n  HostName 127.0.0.1\n  Port {}\n  User {}\n  IdentityFile {}\n",
+        fixture.port,
+        current_test_username(),
+        public_only.display(),
+    ));
+    let target = serde_json::json!({
+        "id": "fixture", "type": "ssh", "host": "fixture", "port": 22, "username": "",
+        "authType": "sshConfig", "sshAgentSocketPath": socket.to_string_lossy(),
+    });
+    let route = super::expand_ssh_config_route_with(vec![target], &environment).unwrap();
+    let hop = &route[0];
+    let (public_keys, private_keys) = super::ssh_config_identities(hop);
+    assert_eq!(public_keys.len(), 1);
+    assert!(private_keys.is_empty());
+
+    let socket_path = super::configured_agent_socket(hop, None).unwrap();
+    let mut agent = super::connect_ssh_agent_socket(Some(&socket_path))
+        .await
+        .unwrap();
+    let agent_keys = agent
+        .request_identities()
+        .await
+        .unwrap()
+        .iter()
+        .map(|identity| identity.public_key().into_owned())
+        .collect::<Vec<_>>();
+    assert_eq!(agent_keys.len(), 2);
+    let selected = super::order_agent_identities(agent_keys, &public_keys, true);
+    assert_eq!(selected.len(), 1);
+
+    let stream = super::connect_ssh_transport(
+        hop,
+        hop["host"].as_str().unwrap(),
+        hop["port"].as_u64().unwrap() as u16,
+    )
+    .await
+    .unwrap();
+    let mut handle = client::connect_stream(
+        Arc::new(client::Config::default()),
+        stream,
+        AcceptTestServerKey,
+    )
+    .await
+    .unwrap();
+    let result = handle
+        .authenticate_publickey_with(
+            hop["username"].as_str().unwrap(),
+            selected[0].clone(),
+            None,
+            &mut agent,
+        )
+        .await
+        .unwrap();
+    assert!(result.success());
+    let _ = agent_process.kill();
+    let _ = agent_process.wait();
+    let _ = std::fs::remove_dir_all(home);
+}
