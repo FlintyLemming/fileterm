@@ -41,5 +41,6 @@ fn new_client_handler(
         interaction,
         remote_sshid,
         disconnect_reason,
+        known_hosts_files: Vec::new(),
     }
 }

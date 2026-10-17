@@ -46,7 +46,8 @@ export function ConnectionSshAuthSection({
                 { value: 'keyboard-interactive', label: t.keyboardInteractiveAuth },
                 { value: 'jumpserver-koko-mfa', label: t.jumpServerKokoMfaAuth },
                 { value: 'kubernetes', label: t.kubernetesAuth },
-                { value: 'system', label: t.systemSshAuth }
+                { value: 'system', label: t.systemSshAuth },
+                { value: 'sshConfig', label: t.sshConfigAuth }
               ]}
               onChange={(value) => setForm((prev) => ({ ...prev, authType: value as CreateProfileInput['authType'] }))}
             />
@@ -61,7 +62,11 @@ export function ConnectionSshAuthSection({
               id="connection-username"
               autoComplete="username"
               spellCheck={false}
-              placeholder={t.usernamePlaceholder}
+              placeholder={
+                form.type === 'ssh' && form.authType === 'sshConfig'
+                  ? t.sshConfigUsernamePlaceholder
+                  : t.usernamePlaceholder
+              }
               value={form.username}
               onChange={(event) => setForm((prev) => ({ ...prev, username: event.target.value }))}
             />
@@ -102,6 +107,14 @@ export function ConnectionSshAuthSection({
               }))
             }
           />
+        ) : null}
+        {form.type === 'ssh' && form.authType === 'sshConfig' ? (
+          <div className="span-2 ssh-auth-hint">
+            <AppIcon name="info" size={15} className="ssh-auth-hint__icon" />
+            <div className="ssh-auth-hint__content">
+              <div className="ssh-auth-hint__item">{t.sshConfigAuthHint}</div>
+            </div>
+          </div>
         ) : null}
         {form.type === 'ssh' && (isKeyboardInteractiveAuth || form.authType === 'kubernetes') ? (
           <div className="span-2 ssh-auth-hint">

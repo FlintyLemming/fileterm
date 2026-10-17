@@ -328,6 +328,9 @@ pub struct ClientHandler {
     interaction_window_label: Option<String>,
     interaction: SshInteractionContext,
     disconnect_reason: SharedSshDisconnectReason,
+    /// OpenSSH known_hosts files for hops resolved from `~/.ssh/config`. A
+    /// recorded matching key is trusted without prompting, like `ssh`.
+    known_hosts_files: Vec<std::path::PathBuf>,
 }
 
 impl Handler for ClientHandler {
@@ -434,6 +437,33 @@ impl Handler for ClientHandler {
                 &self.tab_id,
                 "host-key mismatch; requesting user verification",
             );
+        }
+        if self.trusted_fingerprint.is_none() {
+            match ssh_config_known_hosts_match(
+                &self.known_hosts_files,
+                &self.host,
+                self.port,
+                &server_public_key.public_key(),
+            ) {
+                KnownHostsMatch::Trusted => {
+                    crate::services::logging::session(
+                        &self.app,
+                        "INFO",
+                        "ssh",
+                        &self.tab_id,
+                        "host-key matched OpenSSH known_hosts",
+                    );
+                    return Ok(true);
+                }
+                KnownHostsMatch::Changed => crate::services::logging::session(
+                    &self.app,
+                    "WARN",
+                    "ssh",
+                    &self.tab_id,
+                    "host-key differs from OpenSSH known_hosts; requesting user verification",
+                ),
+                KnownHostsMatch::Unknown => {}
+            }
         }
         let known = self.trusted_fingerprint.clone();
         let request_id = uuid::Uuid::new_v4().to_string();
@@ -597,12 +627,25 @@ impl Handler for ClientHandler {
                     .library_mutation
                     .clone();
                 let _guard = library_mutation.lock().await;
-                let _ = crate::services::profile_ops::update_trusted_host_fingerprint(
-                    &self.app,
-                    &self.profile_id,
-                    &fp,
-                )
-                .await;
+                if self.profile_id.is_empty() {
+                    // A jump host that only exists in ~/.ssh/config has no
+                    // saved profile; record it where OpenSSH would.
+                    ssh_config_learn_known_host(
+                        &self.app,
+                        &self.tab_id,
+                        &self.known_hosts_files,
+                        &self.host,
+                        self.port,
+                        &server_public_key.public_key(),
+                    );
+                } else {
+                    let _ = crate::services::profile_ops::update_trusted_host_fingerprint(
+                        &self.app,
+                        &self.profile_id,
+                        &fp,
+                    )
+                    .await;
+                }
                 self.trusted_fingerprint = Some(fp);
                 Ok(true)
             }

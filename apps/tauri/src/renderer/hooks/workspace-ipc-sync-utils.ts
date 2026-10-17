@@ -49,6 +49,7 @@ export function sameSyncedUiPreferences(left: SyncedUiPreferences, right: Synced
       right.connectionDefaults.resourceMonitoringIntervalSeconds &&
     left.connectionDefaults.reconnectMode === right.connectionDefaults.reconnectMode &&
     left.connectionDefaults.legacyAlgorithms === right.connectionDefaults.legacyAlgorithms &&
+    left.connectionDefaults.sshAgentSocketPath === right.connectionDefaults.sshAgentSocketPath &&
     left.overviewShowStats === right.overviewShowStats &&
     left.overviewShowRecent === right.overviewShowRecent &&
     left.overviewShowAllConnections === right.overviewShowAllConnections &&

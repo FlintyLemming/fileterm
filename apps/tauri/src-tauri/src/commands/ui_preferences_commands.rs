@@ -158,6 +158,9 @@ pub fn app_set_ui_preferences(
         if let Some(value) = connection_defaults.legacy_algorithms {
             preferences.connection_defaults.legacy_algorithms = value;
         }
+        if let Some(value) = connection_defaults.ssh_agent_socket_path {
+            preferences.connection_defaults.ssh_agent_socket_path = value.trim().to_string();
+        }
     }
     if let Some(mcp_agent) = input.mcp_agent {
         if let Some(connection_scope) = mcp_agent.connection_scope {

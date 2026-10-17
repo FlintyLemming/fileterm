@@ -4,4 +4,5 @@
 
 include!("authentication/common.rs");
 include!("authentication/primary.rs");
+include!("authentication/agent.rs");
 include!("authentication/keyboard_interactive.rs");

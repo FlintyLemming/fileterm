@@ -18,6 +18,10 @@ pub struct SshConnectionDefaults {
     pub reconnect_mode: String,
     #[serde(default = "default_legacy_algorithms")]
     pub legacy_algorithms: bool,
+    /// SSH agent socket (Unix) or named pipe (Windows) used for agent
+    /// authentication. Empty uses `SSH_AUTH_SOCK` / the platform default.
+    #[serde(default)]
+    pub ssh_agent_socket_path: String,
 }
 
 #[derive(Deserialize, Debug)]
@@ -31,6 +35,7 @@ pub struct SshConnectionDefaultsInput {
     pub resource_monitoring_metric_order: Option<Vec<String>>,
     pub reconnect_mode: Option<String>,
     pub legacy_algorithms: Option<bool>,
+    pub ssh_agent_socket_path: Option<String>,
 }
 
 /// Non-secret boundary shared by MCP clients, the FileTerm CLI and external
@@ -101,6 +106,7 @@ impl Default for SshConnectionDefaults {
             resource_monitoring_metric_order: default_resource_monitoring_metric_order(),
             reconnect_mode: default_reconnect_mode(),
             legacy_algorithms: default_legacy_algorithms(),
+            ssh_agent_socket_path: String::new(),
         }
     }
 }

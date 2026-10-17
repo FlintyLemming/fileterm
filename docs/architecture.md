@@ -538,6 +538,22 @@ SSH profile 继续通过 `jumpProfileId` 引用上游连接，最多经过 8 个
 整条链的 handles 由当前连接拥有，认证失败、取消、测试完成或关闭会话时显式断开。
 连接表单和工作区底部显示已解析的跳板路径，候选项排除循环和失效链路。
 
+### SSH config 别名连接
+
+`authType: 'sshConfig'` 的 profile 只保存 OpenSSH `Host` 别名（`host` 字段）。每次打开
+会话时，`services/ssh_config` 按 OpenSSH 规则读取 `~/.ssh/config` 与系统 `ssh_config`
+（先到先得、`IdentityFile` 累加、`Host`/`Match host`/`Include`、`%n`/`%h`/`%p`/`%r`/`%u`/`%d`
+等 token），`sessions/ssh/transport/ssh_config_route.rs` 把别名展开为真实地址并把 `ProxyJump`
+链展开为运行时跳板（不另存 profile，与 profile 级跳板/代理互斥）。profile 中非空的用户名
+覆盖 `User`，`Port` 缺省时回退到 profile 端口；`ProxyCommand` 不执行，会明确报错。
+
+认证使用 SSH agent：`IdentityFile` 可以只是 `.pub` 公钥（或私钥的 `.pub` 兄弟文件），按
+配置顺序挑选 agent 中对应的身份签名，`IdentitiesOnly yes` 时只尝试这些身份；agent 优先级为
+`IdentityAgent` > 设置中的 `connectionDefaults.sshAgentSocketPath` > `SSH_AUTH_SOCK`（Windows
+默认 `\\.\pipe\openssh-ssh-agent`，再回退 Pageant）。agent socket 设置只在运行时注入 profile，
+不写回连接。配置展开出的跳板没有 profile，主机密钥先比对 `UserKnownHostsFile`（默认
+`~/.ssh/known_hosts`），用户选择“接受并保存”时写入该文件；目标主机仍保存在 profile 指纹中。
+
 ### FTP
 
 - 独立协议
