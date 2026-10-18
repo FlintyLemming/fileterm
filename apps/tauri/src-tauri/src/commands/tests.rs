@@ -606,7 +606,7 @@ mod ui_preferences_tests {
 
     use super::{
         default_app_icon, default_local_terminal_shells, default_overview_section_order,
-        default_ui_locale,
+        default_tab_bar_layout, default_ui_locale,
         default_resource_monitoring_metric_order, default_resource_monitoring_metrics,
         default_theme_config, default_update_channel, normalize_local_terminal_shells,
         normalize_mcp_operation_policy, normalize_resource_monitoring_metric_order,
@@ -798,6 +798,7 @@ mod ui_preferences_tests {
             legacy_file_list_font_size: None,
             file_panel_remember_ratio: true,
             remember_window_size: true,
+            tab_bar_layout: default_tab_bar_layout(),
             resource_monitoring_metrics: default_resource_monitoring_metrics(),
             resource_monitoring_metric_order: default_resource_monitoring_metric_order(),
             connection_defaults: SshConnectionDefaults::default(),
@@ -842,6 +843,7 @@ mod ui_preferences_tests {
             legacy_file_list_font_size: None,
             file_panel_remember_ratio: true,
             remember_window_size: true,
+            tab_bar_layout: default_tab_bar_layout(),
             resource_monitoring_metrics: default_resource_monitoring_metrics(),
             resource_monitoring_metric_order: default_resource_monitoring_metric_order(),
             connection_defaults: SshConnectionDefaults::default(),
@@ -877,6 +879,7 @@ mod ui_preferences_tests {
             legacy_file_list_font_size: None,
             file_panel_remember_ratio: true,
             remember_window_size: true,
+            tab_bar_layout: "sideways".to_string(),
             resource_monitoring_metrics: default_resource_monitoring_metrics(),
             resource_monitoring_metric_order: default_resource_monitoring_metric_order(),
             connection_defaults: SshConnectionDefaults::default(),
@@ -895,6 +898,7 @@ mod ui_preferences_tests {
         assert_eq!(preferences.theme, "fileterm-dark");
         assert_eq!(preferences.locale, default_ui_locale());
         assert_eq!(preferences.update_channel, "beta");
+        assert_eq!(preferences.tab_bar_layout, "host-groups");
         assert!(preferences.overview_show_recent);
         assert!(preferences.overview_show_all_connections);
         assert_eq!(
@@ -980,6 +984,7 @@ mod ui_preferences_tests {
             legacy_file_list_font_size: None,
             file_panel_remember_ratio: false,
             remember_window_size: true,
+            tab_bar_layout: default_tab_bar_layout(),
             resource_monitoring_metrics: default_resource_monitoring_metrics(),
             resource_monitoring_metric_order: default_resource_monitoring_metric_order(),
             connection_defaults: SshConnectionDefaults::default(),
@@ -1034,6 +1039,7 @@ mod ui_preferences_tests {
             legacy_file_list_font_size: None,
             file_panel_remember_ratio: true,
             remember_window_size: true,
+            tab_bar_layout: default_tab_bar_layout(),
             resource_monitoring_metrics: default_resource_monitoring_metrics(),
             resource_monitoring_metric_order: default_resource_monitoring_metric_order(),
             connection_defaults: SshConnectionDefaults::default(),
@@ -1090,6 +1096,7 @@ mod ui_preferences_tests {
             legacy_file_list_font_size: None,
             file_panel_remember_ratio: true,
             remember_window_size: true,
+            tab_bar_layout: default_tab_bar_layout(),
             resource_monitoring_metrics: default_resource_monitoring_metrics(),
             resource_monitoring_metric_order: default_resource_monitoring_metric_order(),
             connection_defaults: SshConnectionDefaults::default(),
@@ -1136,6 +1143,7 @@ mod ui_preferences_tests {
             legacy_file_list_font_size: None,
             file_panel_remember_ratio: true,
             remember_window_size: true,
+            tab_bar_layout: default_tab_bar_layout(),
             resource_monitoring_metrics: default_resource_monitoring_metrics(),
             resource_monitoring_metric_order: default_resource_monitoring_metric_order(),
             connection_defaults: SshConnectionDefaults::default(),
@@ -1270,11 +1278,13 @@ mod ui_preferences_tests {
         }))
         .expect("legacy preferences without the tray setting should deserialize");
         assert!(legacy.show_macos_menu_bar_icon);
+        assert_eq!(legacy.tab_bar_layout, "host-groups");
 
         let input: UiPreferencesInput = serde_json::from_value(serde_json::json!({
             "autoCheckUpdates": false,
             "showMacosMenuBarIcon": false,
             "updateChannel": "beta",
+            "tabBarLayout": "single-row",
             "overviewShowStats": false,
             "overviewShowRecent": false,
             "overviewShowAllConnections": true,
@@ -1286,6 +1296,7 @@ mod ui_preferences_tests {
         assert_eq!(input.auto_check_updates, Some(false));
         assert_eq!(input.show_macos_menu_bar_icon, Some(false));
         assert_eq!(input.update_channel.as_deref(), Some("beta"));
+        assert_eq!(input.tab_bar_layout.as_deref(), Some("single-row"));
         assert_eq!(input.overview_show_stats, Some(false));
         assert_eq!(input.overview_show_recent, Some(false));
         assert_eq!(input.overview_show_all_connections, Some(true));
@@ -1323,6 +1334,7 @@ mod ui_preferences_tests {
             legacy_file_list_font_size: None,
             file_panel_remember_ratio: false,
             remember_window_size: false,
+            tab_bar_layout: "single-row".to_string(),
             resource_monitoring_metrics: default_resource_monitoring_metrics(),
             resource_monitoring_metric_order: default_resource_monitoring_metric_order(),
             connection_defaults: SshConnectionDefaults::default(),
@@ -1342,6 +1354,7 @@ mod ui_preferences_tests {
         assert_eq!(preferences["autoCheckUpdates"], false);
         assert_eq!(preferences["showMacosMenuBarIcon"], false);
         assert_eq!(preferences["updateChannel"], "beta");
+        assert_eq!(preferences["tabBarLayout"], "single-row");
         assert_eq!(preferences["overviewShowStats"], false);
         assert_eq!(preferences["overviewShowRecent"], false);
         assert_eq!(preferences["overviewShowAllConnections"], true);

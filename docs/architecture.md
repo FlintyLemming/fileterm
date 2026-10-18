@@ -215,6 +215,7 @@ Renderer 只显示遮罩、倒计时和操作反馈，`app_retry_monitoring` 只
 桌面壳相关状态目前属于 renderer 本地 UI 状态，不进入 main service：
 
 - 顶部标签栏、工作区焦点模式与标签切换动效由 `features/layout/tab-bar.tsx`、`features/workspace/workspace-stage.tsx` 和 `app.tsx` 协作。
+- 标签页布局（`host-groups` 二级标签页 / `single-row` 单行）是 Rust 持久化的 UI 偏好 `tabBarLayout`，非法值归一为 `host-groups`；renderer 经 `features/layout/use-tab-bar-layout.ts` 读取并跟随 `app:ui-preferences-changed` 更新，主机分组由 `features/layout/host-groups.ts` 与 `use-host-navigation.ts` 计算。
 - SSH 工作区的文件面板高度、抽屉收起状态、终端悬浮输入条由 `features/workspace/session-workspace.tsx` 与 `features/terminal/terminal-dock.tsx` 处理。
 - 首页侧栏展开/收起、macOS 红绿灯避让和收起态左边界由 `features/workspace/home-workspace.tsx` 与 `styles/features/home.css` 处理。
 - 系统监控的展开态详情和收起态资源摘要都在 `features/system/system-sidebar.tsx` 展示，不把平台判断或采集逻辑放进 renderer。

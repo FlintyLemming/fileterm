@@ -42,6 +42,7 @@ export function AppMainWorkspace({ model }: { model: AppViewModel }) {
     filePanelRememberRatio,
     sidebarWidth,
     setSidebarWidth,
+    tabBarLayout,
     aiCopilotWidth,
     isResizingSidebar,
     isResizingAiCopilot,
@@ -199,8 +200,9 @@ export function AppMainWorkspace({ model }: { model: AppViewModel }) {
   const activeRouteTarget = activeJumpHosts.length && activeProfile?.type === 'ssh' ? activeProfile : undefined
   // Home and session titlebars share the expanded sidebar's live width.
   // A collapsed sidebar keeps enough titlebar space for the native window controls.
-  // Session workspaces put the machine list on the left and machine info on the right.
-  const showHostRail = !isHomeWorkspaceVisible
+  // The host-groups layout puts the machine list on the left and machine info on the right.
+  const usesHostGroups = tabBarLayout === 'host-groups'
+  const showHostRail = usesHostGroups && !isHomeWorkspaceVisible
   const brandWidth = showHostRail
     ? HOST_RAIL_WIDTH
     : isSystemSidebarCollapsed
@@ -235,7 +237,7 @@ export function AppMainWorkspace({ model }: { model: AppViewModel }) {
     isAiCopilotAvailable,
     isAiCopilotOpen,
     isWorkspaceFocusMode,
-    onAddHomeTab: addTabToActiveHost,
+    onAddHomeTab: usesHostGroups ? addTabToActiveHost : addHomeTab,
     onActivateHome: activateHomeTab,
     onActivateSession: activateSession,
     onCloseHomeTab: closeHomeTab,
@@ -266,7 +268,7 @@ export function AppMainWorkspace({ model }: { model: AppViewModel }) {
       if (!nextFocusMode) setSidebarWidth(214)
     },
     orderedTabs,
-    hostNavigation
+    hostNavigation: usesHostGroups ? hostNavigation : undefined
   }
 
   return (
