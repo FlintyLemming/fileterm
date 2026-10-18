@@ -29,7 +29,7 @@ struct HiddenWithMainRegistry {
 }
 
 #[cfg(target_os = "macos")]
-const MACOS_RENDERER_TITLEBAR_BASE_HEIGHT: f64 = 48.0;
+const MACOS_RENDERER_TITLEBAR_BASE_HEIGHT: f64 = 36.0;
 #[cfg(target_os = "macos")]
 const MACOS_TRAFFIC_LIGHT_FRAME_SIZE: f64 = 14.0;
 #[cfg(target_os = "macos")]

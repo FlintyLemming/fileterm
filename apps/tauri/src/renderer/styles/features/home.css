@@ -11,7 +11,7 @@
 .home-workspace {
   display: grid;
   grid-template-columns: var(--sidebar-width, 214px) minmax(0, 1fr);
-  grid-template-rows: 48px minmax(0, 1fr);
+  grid-template-rows: var(--window-tabbar-height) minmax(0, 1fr);
   width: 100%;
   height: 100%;
   background-color: var(--bg-main) !important;
@@ -947,7 +947,7 @@
 }
 
 .fs-shell.has-window-menubar .home-workspace {
-  grid-template-rows: var(--window-tabbar-height, 48px) minmax(0, 1fr);
+  grid-template-rows: var(--window-tabbar-height) minmax(0, 1fr);
 }
 
 /* Home reuses the same titlebar structure as session workspaces. */
@@ -962,7 +962,7 @@
 
 .home-tabs-bar .fs-tabbar {
   background: var(--bg-sidebar) !important;
-  height: 48px;
+  height: var(--window-tabbar-height);
   grid-template-columns: var(--brand-width, 214px) minmax(0, 1fr) !important;
   -webkit-app-region: drag !important;
   width: 100%;
@@ -991,7 +991,7 @@
 
 .fs-shell.is-home-active .status-message {
   position: absolute;
-  top: 48px;
+  top: var(--window-tabbar-height);
   left: var(--sidebar-width, 214px);
   right: 0;
   z-index: 100;

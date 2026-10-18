@@ -103,7 +103,7 @@ fn calibrate_macos_traffic_lights(window: &WebviewWindow<Wry>) -> bool {
         (&zoom, &zoom_superview),
     ];
     let window_height = ns_window.frame().size.height;
-    // WebView page zoom scales the renderer's 48px title bar, while AppKit
+    // WebView page zoom scales the renderer's 36px title bar, while AppKit
     // stays in logical points. Use the same persisted zoom for native layout.
     let ui_zoom_percent = MACOS_TITLEBAR_ZOOM.load(Ordering::Relaxed);
     let titlebar_height = macos_renderer_titlebar_height(ui_zoom_percent);
