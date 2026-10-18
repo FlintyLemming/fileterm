@@ -451,7 +451,8 @@ export function useWorkspaceTabs({
                   kind: 'local' as const,
                   id: localTab.id,
                   title: localTab.title,
-                  tabKind: localTab.kind
+                  tabKind: localTab.kind,
+                  sessionTabId: localTab.kind === 'system' ? localTab.sessionTabId : undefined
                 }
               : null
           }

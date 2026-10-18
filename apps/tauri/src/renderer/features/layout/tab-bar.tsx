@@ -8,9 +8,10 @@ import { CloseButton } from '../common/close-button'
 import { AppIcon } from '../common/app-icon'
 import { StatusIndicator } from '../common/status-indicator'
 import { usePointerSortFallback } from '../../hooks/use-pointer-sort-fallback'
+import type { HostNavigation } from './use-host-navigation'
 
 export type OrderedTabEntry =
-  | { key: string; kind: 'local'; id: string; title: string; tabKind: 'home' | 'system' }
+  | { key: string; kind: 'local'; id: string; title: string; tabKind: 'home' | 'system'; sessionTabId?: string }
   | { key: string; kind: 'session'; tab: WorkspaceTab }
 
 export type TabContextTarget =
@@ -30,6 +31,8 @@ function getSessionTabTitle(tab: WorkspaceTab) {
   return tab.title || t.untitledTab
 }
 
+const MIDDLE_MOUSE_BUTTON = 1
+
 export interface TabBarProps {
   activeHomeTabId: string | null
   activeSessionTabId: string | null
@@ -41,8 +44,8 @@ export interface TabBarProps {
   onAddHomeTab(): void
   onActivateHome(id: string): void
   onActivateSession(id: string): void
-  onCloseHomeTab(event: MouseEvent<HTMLButtonElement>, id: string): void
-  onCloseSessionTab(event: MouseEvent<HTMLButtonElement>, id: string): void
+  onCloseHomeTab(event: MouseEvent<HTMLElement>, id: string): void
+  onCloseSessionTab(event: MouseEvent<HTMLElement>, id: string): void
   onDragEnd(): void
   onDragEnter(targetKey: string): void
   onDragStart(tabKey: string): void
@@ -52,6 +55,13 @@ export interface TabBarProps {
   onToggleWindowMaximize(): void
   onToggleWorkspaceFocus(): void
   orderedTabs: OrderedTabEntry[]
+  /** When set, only the active host's tabs are shown. */
+  hostNavigation?: HostNavigation
+}
+
+// Middle-button presses would otherwise start WebKit's autoscroll or paste on Linux.
+function preventMiddleClickAutoscroll(event: MouseEvent<HTMLElement>) {
+  if (event.button === MIDDLE_MOUSE_BUTTON) event.preventDefault()
 }
 
 export function TabBar({
@@ -75,8 +85,10 @@ export function TabBar({
   onToggleAiCopilot,
   onToggleWindowMaximize,
   onToggleWorkspaceFocus,
-  orderedTabs
+  orderedTabs,
+  hostNavigation
 }: TabBarProps) {
+  const visibleTabs = hostNavigation ? hostNavigation.activeEntries : orderedTabs
   const focusModeLabel = isWorkspaceFocusMode ? t.exitWorkspaceFocusMode : t.enterWorkspaceFocusMode
   const aiCopilotLabel = isAiCopilotOpen ? t.closeAiCopilot : t.openAiCopilot
   const suppressTabClickRef = useRef(false)
@@ -141,7 +153,7 @@ export function TabBar({
       </div>
       <div className="titlebar-tabarea">
         <div className="fs-tabs" onWheel={handleHorizontalWheelScroll}>
-          {orderedTabs.map((entry, index) =>
+          {visibleTabs.map((entry, index) =>
             entry.kind === 'local' ? (
               <div
                 key={entry.key}
@@ -162,11 +174,15 @@ export function TabBar({
                   })
                 }}
                 onPointerDown={(event) => startPointerSort(event, entry.key)}
+                onMouseDown={preventMiddleClickAutoscroll}
                 onKeyDown={(event) => {
                   if (event.key === 'Enter' || event.key === ' ') {
                     event.preventDefault()
                     onActivateHome(entry.id)
                   }
+                }}
+                onAuxClick={(event) => {
+                  if (event.button === MIDDLE_MOUSE_BUTTON) onCloseHomeTab(event, entry.id)
                 }}
                 role="button"
                 tabIndex={0}
@@ -201,11 +217,15 @@ export function TabBar({
                   })
                 }}
                 onPointerDown={(event) => startPointerSort(event, entry.key)}
+                onMouseDown={preventMiddleClickAutoscroll}
                 onKeyDown={(event) => {
                   if (event.key === 'Enter' || event.key === ' ') {
                     event.preventDefault()
                     onActivateSession(entry.tab.id)
                   }
+                }}
+                onAuxClick={(event) => {
+                  if (event.button === MIDDLE_MOUSE_BUTTON) onCloseSessionTab(event, entry.tab.id)
                 }}
                 role="button"
                 tabIndex={0}

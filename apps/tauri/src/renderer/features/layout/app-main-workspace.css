@@ -19,3 +19,51 @@
 .fs-shell.has-ai-copilot .terminal-right-frame {
   display: none;
 }
+
+/* Session layout: machine list | workspace | right frame | machine info | Copilot.
+ * Columns that are not shown collapse to 0 so grid placement stays fixed. */
+:root .fs-shell.has-host-rail,
+:root .fs-shell.has-host-rail.is-local-terminal {
+  --host-info-width: 0px;
+  --host-copilot-width: 0px;
+  grid-template-columns:
+    var(--host-rail-width, 208px) minmax(0, 1fr) auto var(--host-info-width)
+    var(--host-copilot-width);
+}
+
+:root .fs-shell.has-host-rail.has-system-sidebar {
+  --host-info-width: var(--sidebar-width, 214px);
+}
+
+:root .fs-shell.has-host-rail.has-ai-copilot {
+  --host-copilot-width: var(--ai-copilot-panel-width);
+}
+
+:root .fs-shell.has-host-rail .fs-main {
+  grid-column: 2;
+}
+
+:root .fs-shell.has-host-rail .fs-main.full-width {
+  grid-column: 2 / 5;
+}
+
+:root .fs-shell.has-host-rail .transfer-strip,
+:root .fs-shell.has-host-rail .transfer-strip.full-width {
+  grid-column: 2 / 5;
+}
+
+:root .fs-shell.has-host-rail.has-ai-copilot .fs-main,
+:root .fs-shell.has-host-rail.has-ai-copilot .transfer-strip {
+  margin-right: 0;
+}
+
+:root .fs-shell.has-host-rail > .fs-sidebar {
+  grid-column: 4;
+  border-right: 0 !important;
+  border-left: 1px solid var(--border-light) !important;
+}
+
+:root .fs-shell.has-host-rail > .fs-sidebar .sidebar-resizer {
+  right: auto !important;
+  left: -3px;
+}

@@ -57,7 +57,14 @@ export function useAppResize({
     }
     const onMouseMove = (event: globalThis.MouseEvent) => {
       const maxWidth = getSidebarMaxWidth(window.innerWidth, isHomeWorkspaceVisible)
-      const nextWidth = Math.min(maxWidth, Math.max(SIDEBAR_MIN_WIDTH, event.clientX))
+      // Session workspaces dock the machine info sidebar on the right, so it grows leftwards.
+      const rightDockedSidebar = isHomeWorkspaceVisible
+        ? null
+        : document.querySelector<HTMLElement>('.fs-shell.has-host-rail > .fs-sidebar')
+      const rawWidth = rightDockedSidebar
+        ? rightDockedSidebar.getBoundingClientRect().right - event.clientX
+        : event.clientX
+      const nextWidth = Math.min(maxWidth, Math.max(SIDEBAR_MIN_WIDTH, rawWidth))
       setSidebarWidth(
         Math.abs(nextWidth - DEFAULT_SIDEBAR_WIDTH) <= SIDEBAR_SNAP_THRESHOLD ? DEFAULT_SIDEBAR_WIDTH : nextWidth
       )

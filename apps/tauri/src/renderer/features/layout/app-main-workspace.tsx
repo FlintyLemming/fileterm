@@ -9,9 +9,13 @@ import { KeepAliveWorkspaceStage } from '../workspace/workspace-stage'
 import { TabBar, type TabBarProps, type TabContextTarget } from './tab-bar'
 import type { AppViewModel } from './app-view-model'
 import { WindowMenubar } from './window-menubar'
+import { HostGroupList } from './host-group-list'
+import { useHostNavigation } from './use-host-navigation'
 import { DEFAULT_SIDEBAR_WIDTH, STATUS_MESSAGE_TIMEOUT_MS } from '../../app/app-shell-utils'
 import { t, setLocale } from '../../i18n'
 import { resolveSshJumpRoute } from '../../app/ssh-jump-route'
+
+const HOST_RAIL_WIDTH = 208
 
 export function AppMainWorkspace({ model }: { model: AppViewModel }) {
   const [dismissedInteractiveGatewayNoticeTabId, setDismissedInteractiveGatewayNoticeTabId] = useState<string | null>(
@@ -195,20 +199,47 @@ export function AppMainWorkspace({ model }: { model: AppViewModel }) {
   const activeRouteTarget = activeJumpHosts.length && activeProfile?.type === 'ssh' ? activeProfile : undefined
   // Home and session titlebars share the expanded sidebar's live width.
   // A collapsed sidebar keeps enough titlebar space for the native window controls.
-  const brandWidth = isSystemSidebarCollapsed ? DEFAULT_SIDEBAR_WIDTH : resolvedSidebarWidth
+  // Session workspaces put the machine list on the left and machine info on the right.
+  const showHostRail = !isHomeWorkspaceVisible
+  const brandWidth = showHostRail
+    ? HOST_RAIL_WIDTH
+    : isSystemSidebarCollapsed
+      ? DEFAULT_SIDEBAR_WIDTH
+      : resolvedSidebarWidth
+  const activateSession = (tabId: string) => {
+    void activateSessionTab(tabId)
+  }
+  const hostNavigation = useHostNavigation({
+    orderedTabs,
+    profiles: workspace.profiles,
+    activeHomeTabId: effectiveActiveLocalTabId,
+    activeSessionTabId: visibleActiveSessionTabId,
+    onActivateHome: activateHomeTab,
+    onActivateSession: activateSession,
+    onAddHomeTab: addHomeTab
+  })
+  const activeHostGroup = hostNavigation.groups.find((group) => group.key === hostNavigation.activeGroupKey)
+  // "+" opens another tab on the active machine.
+  const addTabToActiveHost = () => {
+    if (activeHostGroup?.kind === 'local') {
+      void openLocalTerminal()
+    } else if (activeHostGroup?.kind === 'profile' && activeHostGroup.profileId) {
+      void openProfile(activeHostGroup.profileId)
+    } else {
+      addHomeTab()
+    }
+  }
   const tabBarProps: Omit<TabBarProps, 'homeBrandContent'> = {
     activeHomeTabId: effectiveActiveLocalTabId,
     activeSessionTabId: visibleActiveSessionTabId,
     isAiCopilotAvailable,
     isAiCopilotOpen,
     isWorkspaceFocusMode,
-    onAddHomeTab: addHomeTab,
+    onAddHomeTab: addTabToActiveHost,
     onActivateHome: activateHomeTab,
-    onActivateSession: (tabId: string) => {
-      void activateSessionTab(tabId)
-    },
+    onActivateSession: activateSession,
     onCloseHomeTab: closeHomeTab,
-    onCloseSessionTab: (event: MouseEvent<HTMLButtonElement>, tabId: string) => {
+    onCloseSessionTab: (event: MouseEvent<HTMLElement>, tabId: string) => {
       void closeSessionTab(event, tabId)
     },
     onDragEnd: endTabDrag,
@@ -234,17 +265,19 @@ export function AppMainWorkspace({ model }: { model: AppViewModel }) {
       }))
       if (!nextFocusMode) setSidebarWidth(214)
     },
-    orderedTabs
+    orderedTabs,
+    hostNavigation
   }
 
   return (
     <>
       <div
-        className={`fs-shell ${usesCustomWindowChrome ? 'has-window-menubar' : ''} ${isMaximized ? 'is-window-maximized' : ''} ${isHomeWorkspaceVisible ? 'is-home-active' : ''} ${isLocalTerminalWorkspace ? 'is-local-terminal' : ''} ${isSystemSidebarCollapsed ? 'is-sidebar-collapsed' : ''} ${isResizingSidebar ? 'is-resizing-sidebar' : ''} ${isResizingAiCopilot ? 'is-resizing-copilot' : ''} ${shouldShowAiCopilot ? 'has-ai-copilot' : ''} ${usesCustomWindowChrome && sessionSecurity.isLocked ? 'is-session-locked' : ''}`}
+        className={`fs-shell ${usesCustomWindowChrome ? 'has-window-menubar' : ''} ${isMaximized ? 'is-window-maximized' : ''} ${isHomeWorkspaceVisible ? 'is-home-active' : ''} ${isLocalTerminalWorkspace ? 'is-local-terminal' : ''} ${isSystemSidebarCollapsed ? 'is-sidebar-collapsed' : ''} ${showHostRail ? 'has-host-rail' : ''} ${shouldShowSystemSidebar ? 'has-system-sidebar' : ''} ${isResizingSidebar ? 'is-resizing-sidebar' : ''} ${isResizingAiCopilot ? 'is-resizing-copilot' : ''} ${shouldShowAiCopilot ? 'has-ai-copilot' : ''} ${usesCustomWindowChrome && sessionSecurity.isLocked ? 'is-session-locked' : ''}`}
         style={
           {
             '--sidebar-width': `${resolvedSidebarWidth}px`,
             '--brand-width': `${brandWidth}px`,
+            '--host-rail-width': `${HOST_RAIL_WIDTH}px`,
             '--ai-copilot-panel-width': `${aiCopilotWidth}px`
           } as CSSProperties
         }
@@ -273,6 +306,13 @@ export function AppMainWorkspace({ model }: { model: AppViewModel }) {
           />
         ) : null}
         {!isHomeWorkspaceVisible && <TabBar {...tabBarProps} />}
+
+        {showHostRail ? (
+          <aside aria-label={t.hostRailTitle} className="fs-host-rail">
+            <h2 className="fs-host-rail-title">{t.hostRailTitle}</h2>
+            <HostGroupList navigation={hostNavigation} />
+          </aside>
+        ) : null}
 
         {shouldShowSystemSidebar ? (
           <SystemSidebarShell
