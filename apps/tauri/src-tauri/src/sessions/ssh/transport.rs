@@ -6,4 +6,5 @@ include!("transport/route.rs");
 include!("transport/jump.rs");
 include!("transport/proxy.rs");
 include!("transport/credentials.rs");
+include!("transport/ssh_config_route.rs");
 include!("transport/session.rs");

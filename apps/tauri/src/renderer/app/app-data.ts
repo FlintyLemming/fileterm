@@ -163,7 +163,8 @@ function connectionSettingsForProfile(profile: SshProfile, defaults: SshConnecti
     resourceMonitoringMetrics: defaults.resourceMonitoringMetrics,
     resourceMonitoringMetricOrder: defaults.resourceMonitoringMetricOrder,
     reconnectMode: overrides.reconnectMode ?? profile.reconnectMode ?? defaults.reconnectMode,
-    legacyAlgorithms: overrides.legacyAlgorithms ?? profile.legacyAlgorithms ?? defaults.legacyAlgorithms
+    legacyAlgorithms: overrides.legacyAlgorithms ?? profile.legacyAlgorithms ?? defaults.legacyAlgorithms,
+    sshAgentSocketPath: defaults.sshAgentSocketPath
   }
 }
 

@@ -625,6 +625,12 @@ fn resolve_profile_with_connection_defaults(
         "legacyAlgorithms".to_string(),
         value_for("legacyAlgorithms", Value::Bool(defaults.legacy_algorithms)),
     );
+    // The agent socket is an application-wide setting, never a per-profile
+    // value; it only travels with the runtime profile to the SSH worker.
+    resolved.insert(
+        "sshAgentSocketPath".to_string(),
+        Value::String(defaults.ssh_agent_socket_path.clone()),
+    );
 
     Value::Object(resolved)
 }

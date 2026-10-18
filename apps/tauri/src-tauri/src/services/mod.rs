@@ -16,6 +16,7 @@ pub mod secret_crypto;
 pub mod security;
 pub mod serial_ports;
 pub mod session_logs;
+pub mod ssh_config;
 pub mod ssh_keys;
 pub mod transfers;
 pub mod tunnels;

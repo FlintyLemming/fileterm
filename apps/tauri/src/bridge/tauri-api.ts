@@ -40,6 +40,7 @@ import type {
   BackupPasswordRequest,
   SshKeyFileSelection,
   SshKeyImportResult,
+  SshConfigHostSummary,
   SshKeyMetadata,
   ImportSshKeyInput,
   LocalFileItem,
@@ -526,6 +527,7 @@ export async function createTauriApi(): Promise<FileTermDesktopApi> {
     getImportedFontData: (fontId: string) => invoke<string | null>('app_get_imported_font_data', { fontId }),
     deleteImportedFont: (fontId: string) => invoke<boolean>('app_delete_imported_font', { fontId }),
     listSshKeys: () => invoke<SshKeyMetadata[]>('app_list_ssh_keys'),
+    listSshConfigHosts: () => invoke<SshConfigHostSummary[]>('app_list_ssh_config_hosts'),
     selectSshKeyFile: () => invoke<SshKeyFileSelection | null>('app_select_ssh_key_file'),
     importSshKey: (input?: ImportSshKeyInput) => invoke<SshKeyImportResult | null>('app_import_ssh_key', { input }),
     updateSshKeyNote: (keyId: string, note: string) =>

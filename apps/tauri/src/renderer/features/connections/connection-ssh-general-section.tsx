@@ -14,6 +14,10 @@ import { SelectionControl } from '../common/selection-control'
 import { StableButtonContent } from '../common/stable-button-content'
 import type { ConnectionFormSetter } from './connection-modal-utils'
 import { isLowResourceSshMode, toggleLowResourceSshMode } from './connection-low-resource-mode'
+import { SshConfigHostField } from './ssh-config-host-field'
+
+// Dropdown-only value; the profile itself is stored as type "ssh" + authType "sshConfig".
+const SSH_CONFIG_CONNECTION_TYPE = 'ssh-config'
 
 export function ConnectionSshGeneralSection({
   connectionDefaults,
@@ -49,6 +53,8 @@ export function ConnectionSshGeneralSection({
   setForm: ConnectionFormSetter
 }) {
   const lowResourceMode = isLowResourceSshMode(form, connectionDefaults)
+  // The alias resolves HostName and Port from ~/.ssh/config.
+  const usesSshConfigAlias = form.type === 'ssh' && form.authType === 'sshConfig'
   return (
     <fieldset className="ssh-fieldset">
       <legend>{t.general}</legend>
@@ -56,15 +62,18 @@ export function ConnectionSshGeneralSection({
         <label className="span-2">
           {t.connectionType}:
           <DropdownSelect
-            value={form.type}
+            value={usesSshConfigAlias ? SSH_CONFIG_CONNECTION_TYPE : form.type}
             options={[
               { value: 'ssh', label: 'SSH / SFTP' },
+              { value: SSH_CONFIG_CONNECTION_TYPE, label: t.sshConfigConnectionType },
               { value: 'ftp', label: 'FTP / FTPS' },
               { value: 'telnet', label: 'Telnet' },
               { value: 'serial', label: t.serial }
             ]}
             onChange={(value) => {
-              const nextType = value as SessionType
+              // "SSH (ssh config)" is an SSH profile whose host is an OpenSSH alias.
+              const pickedSshConfig = value === SSH_CONFIG_CONNECTION_TYPE
+              const nextType = (pickedSshConfig ? 'ssh' : value) as SessionType
               const defaults: Record<SessionType, number> = { ssh: 22, ftp: 21, telnet: 23, serial: 0 }
               setForm((prev) => ({
                 ...prev,
@@ -73,7 +82,13 @@ export function ConnectionSshGeneralSection({
                   prev.port === 22 || prev.port === 21 || prev.port === 23 || !prev.port
                     ? defaults[nextType]
                     : prev.port,
-                authType: nextType === 'ssh' ? (prev.authType ?? 'system') : 'password',
+                authType: pickedSshConfig
+                  ? 'sshConfig'
+                  : nextType === 'ssh'
+                    ? prev.authType && prev.authType !== 'sshConfig'
+                      ? prev.authType
+                      : 'system'
+                    : 'password',
                 useEmptyPassword: nextType === 'ssh' ? prev.useEmptyPassword : false,
                 deviceMode:
                   nextType === 'ssh' ? (prev.type === 'ssh' ? (prev.deviceMode ?? 'server') : 'server') : undefined,
@@ -249,6 +264,8 @@ export function ConnectionSshGeneralSection({
               <div className="span-2 ssh-field-hint">{t.serialPortIdentityMissing}</div>
             )}
           </>
+        ) : usesSshConfigAlias ? (
+          <SshConfigHostField form={form} setForm={setForm} />
         ) : (
           <label className="span-2">
             {t.host}:
@@ -266,8 +283,10 @@ export function ConnectionSshGeneralSection({
             />
           </label>
         )}
-        {form.type !== 'serial' ? <div className="span-2 ssh-field-hint">{t.hostInputHint}</div> : null}
-        {form.type !== 'serial' ? (
+        {form.type !== 'serial' && !usesSshConfigAlias ? (
+          <div className="span-2 ssh-field-hint">{t.hostInputHint}</div>
+        ) : null}
+        {form.type !== 'serial' && !usesSshConfigAlias ? (
           <label className="narrow">
             {t.port}:
             <input

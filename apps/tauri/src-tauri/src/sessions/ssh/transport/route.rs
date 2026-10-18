@@ -193,7 +193,7 @@ async fn open_session(
     } else {
         Vec::new()
     };
-    let route = resolve_ssh_route(profile, &profiles)?;
+    let route = expand_ssh_config_route(resolve_ssh_route(profile, &profiles)?, app)?;
     let mut cleanup = SshSessionCleanup {
         handles: Vec::new(),
     };

@@ -31,6 +31,21 @@ pub fn app_list_ssh_keys(app: AppHandle) -> Result<Vec<serde_json::Value>, AppEr
     crate::services::ssh_keys::list(&app)
 }
 
+/// Concrete `Host` aliases from `~/.ssh/config`, used as suggestions when a
+/// connection is added by its OpenSSH alias.
+#[tauri::command]
+pub fn app_list_ssh_config_hosts(
+    app: AppHandle,
+) -> Result<Vec<crate::services::ssh_config::SshConfigHostSummary>, AppError> {
+    let home = app
+        .path()
+        .home_dir()
+        .map_err(|error| AppError::Command(error.to_string()))?;
+    Ok(crate::services::ssh_config::list_hosts(
+        &crate::services::ssh_config::SshConfigEnvironment::for_home(home),
+    ))
+}
+
 #[tauri::command]
 pub async fn app_select_ssh_key_file(
     app: AppHandle,

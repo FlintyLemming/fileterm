@@ -17,36 +17,8 @@ async fn authenticate_private_key_content(
         .map_err(|error| error.to_string())?;
     // Best-effort: pick the strongest RSA hash the server advertises. For
     // non-RSA keys, hash_alg is ignored by PrivateKeyWithHashAlg::new.
-    // 加 timeout：best_supported_rsa_hash 在服务器不响应时可能永久 await，
-    // 而 authenticate_private_key_content 在 open_session 阶段调用，卡住
-    // 会让 worker 永远起不来。使用 SSH_PASSWORD_AUTH_TIMEOUT 与密码认证
-    // 对齐，保持一致的认证阶段超时语义。
-    let hash_alg: Option<russh::keys::HashAlg> = if key_pair.algorithm().is_rsa() {
-        match wait_for_ssh_stage(
-            "SSH RSA hash negotiation",
-            SSH_PASSWORD_AUTH_TIMEOUT,
-            async {
-                handle
-                    .best_supported_rsa_hash()
-                    .await
-                    .map_err(|e| e.to_string())
-            },
-        )
-        .await
-        {
-            Ok(Some(Some(hash))) => Some(hash),
-            Ok(_) => Some(russh::keys::HashAlg::Sha512),
-            Err(error) => {
-                crate::services::logging::session(
-                    app,
-                    "WARN",
-                    "ssh",
-                    &interaction.tab_id,
-                    format!("RSA hash negotiation failed, falling back to Sha512: {error}"),
-                );
-                Some(russh::keys::HashAlg::Sha512)
-            }
-        }
+    let hash_alg = if key_pair.algorithm().is_rsa() {
+        negotiated_rsa_hash(handle, app, interaction).await
     } else {
         None
     };
@@ -86,20 +58,11 @@ async fn try_system_authenticate(
     let mut authentication_attempted = false;
     let mut candidate_errors = Vec::new();
 
-    // Agent support is Unix-only in russh, but a missing/broken agent must not
-    // prevent the default-key fallback (including on Windows).
-    // 加 timeout：AgentClient::connect_env / request_identities /
-    // authenticate_publickey_with 在 SSH agent 卡住（unix socket 阻塞、
-    // agent 进程 hang）时会永久 await，而本函数在 open_session 阶段
-    // 调用，卡住会让 worker 永远起不来。
-    #[cfg(unix)]
-    match wait_for_ssh_stage("SSH agent connect", SSH_PASSWORD_AUTH_TIMEOUT, async {
-        russh::keys::agent::client::AgentClient::connect_env()
-            .await
-            .map_err(|e| e.to_string())
-    })
-    .await
-    {
+    // A missing/broken agent must not prevent the default-key fallback.
+    // connect_ssh_agent and every agent stage below are bounded by timeouts:
+    // this runs during open_session, and a hung agent would otherwise keep
+    // the worker from ever starting.
+    match connect_ssh_agent(profile, app).await {
         Ok(mut agent) => {
             candidate_found = true;
             crate::services::logging::session(
@@ -127,17 +90,13 @@ async fn try_system_authenticate(
                     for identity in identities {
                         authentication_attempted = true;
                         let public_key = identity.public_key().into_owned();
-                        match wait_for_ssh_stage(
-                            "SSH agent public key authentication",
-                            SSH_PASSWORD_AUTH_TIMEOUT,
-                            async {
-                                handle
-                                    .authenticate_publickey_with(
-                                        username, public_key, None, &mut agent,
-                                    )
-                                    .await
-                                    .map_err(|error| error.to_string())
-                            },
+                        match authenticate_agent_identity(
+                            handle,
+                            username,
+                            &mut agent,
+                            public_key,
+                            app,
+                            interaction,
                         )
                         .await
                         {
@@ -239,6 +198,7 @@ enum ConfiguredAuthenticationMethod {
     Password,
     PrivateKey,
     KeyboardInteractive,
+    SshConfig,
     System,
 }
 
@@ -251,6 +211,7 @@ fn configured_authentication_method(auth_type: &str) -> ConfiguredAuthentication
         }
         "privateKey" => ConfiguredAuthenticationMethod::PrivateKey,
         "keyboard-interactive" => ConfiguredAuthenticationMethod::KeyboardInteractive,
+        SSH_CONFIG_AUTH_TYPE => ConfiguredAuthenticationMethod::SshConfig,
         _ => ConfiguredAuthenticationMethod::System,
     }
 }
@@ -410,6 +371,9 @@ async fn try_authenticate(
             Ok(AuthenticationResult::KeyboardInteractiveAvailable {
                 mode: KeyboardInteractiveMode::PasswordFallback,
             })
+        }
+        ConfiguredAuthenticationMethod::SshConfig => {
+            try_ssh_config_authenticate(handle, username, profile, app, interaction).await
         }
         ConfiguredAuthenticationMethod::System => {
             try_system_authenticate(handle, username, profile, app, interaction).await

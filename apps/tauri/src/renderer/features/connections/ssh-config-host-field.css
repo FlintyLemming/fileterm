@@ -1,0 +1,27 @@
+.ssh-config-host-menu {
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.ssh-config-host-menu button.ssh-config-host-option {
+  justify-content: space-between;
+  gap: 12px;
+}
+
+/* Match the theme skins' hover state; they outrank a plain class selector. */
+.context-menu.ssh-config-host-menu button.ssh-config-host-option.is-highlighted {
+  background: var(--selection-bg);
+}
+
+.ssh-config-host-option__alias {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ssh-config-host-option__target {
+  flex-shrink: 0;
+  color: var(--text-muted);
+  font-size: 11px;
+}

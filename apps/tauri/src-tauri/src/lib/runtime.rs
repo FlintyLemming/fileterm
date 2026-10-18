@@ -571,6 +571,7 @@ pub fn run() {
             crate::commands::app_get_imported_font_data,
             crate::commands::app_delete_imported_font,
             crate::commands::app_list_ssh_keys,
+            crate::commands::app_list_ssh_config_hosts,
             crate::commands::app_select_ssh_key_file,
             crate::commands::app_import_ssh_key,
             crate::commands::app_update_ssh_key_note,

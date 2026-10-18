@@ -1,4 +1,5 @@
 import './connections-settings-panel.css'
+import { useEffect, useState } from 'react'
 import type { FileTermDesktopApi, SshConnectionDefaults } from '@fileterm/core'
 import { DropdownSelect } from '../../../common/dropdown-select'
 import { ResourceMonitoringMetricsEditor } from '../../../common/resource-monitoring-metrics-editor'
@@ -24,6 +25,13 @@ export function ConnectionsSettingsPanel() {
     setConnectionDefault,
     connectionDefaultsError
   } = useSettingsModalContext<ConnectionsSettingsPanelContext>()
+  // Commit the socket path on blur/Enter instead of saving every keystroke.
+  const [agentSocketDraft, setAgentSocketDraft] = useState(connectionDefaults.sshAgentSocketPath)
+  useEffect(() => setAgentSocketDraft(connectionDefaults.sshAgentSocketPath), [connectionDefaults.sshAgentSocketPath])
+  const commitAgentSocket = () => {
+    const next = agentSocketDraft.trim()
+    if (next !== connectionDefaults.sshAgentSocketPath) setConnectionDefault('sshAgentSocketPath', next)
+  }
 
   return (
     <div className="settings-panel">
@@ -113,6 +121,24 @@ export function ConnectionsSettingsPanel() {
                 <p className="advanced-toggle-hint">{t.legacyAlgorithmsHint}</p>
               </div>
             </div>
+          </div>
+          <div className="settings-connection-defaults__group">
+            <h4>{t.sshAgentSettings}</h4>
+            <label className="settings-connection-defaults__field">
+              <span>{t.sshAgentSocketPath}</span>
+              <input
+                spellCheck={false}
+                autoCapitalize="off"
+                placeholder={t.sshAgentSocketPathPlaceholder}
+                value={agentSocketDraft}
+                onChange={(event) => setAgentSocketDraft(event.target.value)}
+                onBlur={commitAgentSocket}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter') commitAgentSocket()
+                }}
+              />
+            </label>
+            <p className="advanced-toggle-hint">{t.sshAgentSocketPathHint}</p>
           </div>
           <div className="settings-connection-defaults__group">
             <h4>{t.reliability}</h4>
