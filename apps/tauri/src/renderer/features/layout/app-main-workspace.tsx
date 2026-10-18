@@ -542,7 +542,8 @@ export function AppMainWorkspace({ model }: { model: AppViewModel }) {
           </div>
         </main>
 
-        {!isHomeWorkspaceVisible && !isLocalTerminalWorkspace && (
+        {/* Machine info borders the terminal in the host-groups layout, so the edge frame would be a stray strip. */}
+        {!isHomeWorkspaceVisible && !isLocalTerminalWorkspace && !showHostRail && (
           <div className="terminal-right-frame" aria-hidden="true" />
         )}
 
