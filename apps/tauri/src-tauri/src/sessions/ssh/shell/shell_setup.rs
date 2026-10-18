@@ -151,7 +151,8 @@ fn suppress_shell_setup_echo(
     if state.preserve_visible_prefix && state.visible_prefix.is_none() {
         if let Some(length) = state
             .buffer
-            .find("test -z \"${FISH_VERSION-}\"")
+            .find("test -z \"$FISH_VERSION\"")
+            .or_else(|| state.buffer.find("test -z \"${FISH_VERSION-}\""))
             .or_else(|| state.buffer.find("__tdcwd(){"))
             .or_else(|| state.buffer.find(HOOK_MARKER))
         {
@@ -236,17 +237,21 @@ fn shell_cwd_setup_for_platform(platform: &str) -> Option<&'static str> {
 /// only a broken/inaccessible CWD needs a cd to a confirmed fallback.
 /// Send this as a separate short line so BusyBox line editors cannot truncate
 /// it together with their compact CWD hook. Fish skips the POSIX eval body.
-const SHELL_HOME_DIRECTORY_RECOVERY: &str = "test -z \"${FISH_VERSION-}\" && eval '[ -d \"${HOME-}\" ] || { { [ -r . ] && [ -x . ] && pwd -P >/dev/null 2>&1; } || { cd / 2>/dev/null || cd /tmp 2>/dev/null; }; }'";
+// `$FISH_VERSION` is understood by both POSIX shells and fish.  Do not use
+// the POSIX `${FISH_VERSION-}` default-value form here: fish parses the whole
+// command before evaluating the short-circuit and rejects that expansion,
+// leaving the injected line visible when the terminal is resized/redrawn.
+const SHELL_HOME_DIRECTORY_RECOVERY: &str = "test -z \"$FISH_VERSION\" && eval '[ -d \"${HOME-}\" ] || { { [ -r . ] && [ -x . ] && pwd -P >/dev/null 2>&1; } || { cd / 2>/dev/null || cd /tmp 2>/dev/null; }; }'";
 
 fn interactive_shell_setup_command(setup: &str) -> Vec<u8> {
     format!(" {SHELL_HOME_DIRECTORY_RECOVERY}\r {setup}\r").into_bytes()
 }
 
 /// Linux shell CWD hook (bash / zsh / posix). Mirrors Electron's
-/// `SHELL_CWD_SETUP` constant. Uses `test -z "${FISH_VERSION-}"` as a fish
+/// `SHELL_CWD_SETUP` constant. Uses `test -z "$FISH_VERSION"` as a fish
 /// guard so the hook is a no-op on fish (which has its own CWD reporting).
 const SHELL_CWD_SETUP: &str = concat!(
-    "test -z \"${FISH_VERSION-}\" && eval '",
+    "test -z \"$FISH_VERSION\" && eval '",
     "__tdcwd() { printf \"\\033]7;file://%s\\007\\033]1337;RemoteUser=%s\\007\" \"$(pwd -P 2>/dev/null)\" \"$(id -un 2>/dev/null)\"; }; ",
     "__ftcommand() { printf \"\\033]7777;FileTermCommand\\007\"; }; ",
     "printf \"\\033]7777;FileTermCommandTracking=0\\007\"; ",
