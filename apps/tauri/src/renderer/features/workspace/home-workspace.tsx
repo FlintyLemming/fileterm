@@ -30,6 +30,7 @@ import { CommandManagerModal } from '../commands/command-manager-modal'
 import { SshKeyManagerPage } from '../ssh-keys/ssh-key-manager-page'
 import { SettingsModal } from '../settings/settings-modal'
 import { TabBar, type TabBarProps } from '../layout/tab-bar'
+import { HostGroupList } from '../layout/host-group-list'
 import { BackgroundSessionsPage } from './background-sessions-page'
 
 export function HomeWorkspace({
@@ -263,6 +264,8 @@ export function HomeWorkspace({
             ? { icon: 'error_outline', label: t.updateRetry, title: updateStatus.message ?? t.updateFailed }
             : null
 
+  const hostNavigation = tabBarProps.hostNavigation
+
   return (
     <section className={`home-workspace ${isSidebarCollapsed ? 'is-sidebar-collapsed' : ''}`}>
       <div className="home-tabs-bar">
@@ -353,6 +356,13 @@ export function HomeWorkspace({
           {/* Quick Connect sidebar button hidden — code preserved in QuickLinksPage.tsx */}
           {/* Docs sidebar button hidden — handleOpenDocs still available */}
         </nav>
+
+        {hostNavigation && hostNavigation.groups.some((group) => group.kind !== 'home') ? (
+          <section aria-label={t.hostRailTitle} className="home-sidebar-hosts">
+            {!isSidebarCollapsed ? <h3 className="fs-host-rail-title">{t.hostRailTitle}</h3> : null}
+            <HostGroupList collapsed={isSidebarCollapsed} includeHome={false} navigation={hostNavigation} />
+          </section>
+        ) : null}
 
         {/* Sidebar Footer */}
         <div className="sidebar-footer">

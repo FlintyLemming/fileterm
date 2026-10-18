@@ -76,7 +76,7 @@ export function createWorkspaceTabsContextActions(context: WorkspaceTabsContextA
     })
   }
 
-  const closeSessionTab = async (event: MouseEvent<HTMLButtonElement>, tabId: string) => {
+  const closeSessionTab = async (event: MouseEvent<HTMLElement>, tabId: string) => {
     event.stopPropagation()
     if (!desktopApi) {
       return
@@ -145,7 +145,7 @@ export function createWorkspaceTabsContextActions(context: WorkspaceTabsContextA
     onStatusMessage(null)
   }
 
-  const closeHomeTab = (event: MouseEvent<HTMLButtonElement>, homeTabId: string) => {
+  const closeHomeTab = (event: MouseEvent<HTMLElement>, homeTabId: string) => {
     event.stopPropagation()
     closeHomeTabById(homeTabId)
   }
