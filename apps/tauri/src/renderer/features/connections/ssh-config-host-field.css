@@ -8,8 +8,9 @@
   gap: 12px;
 }
 
-.ssh-config-host-menu button.ssh-config-host-option.is-highlighted {
-  background-color: var(--surface-hover);
+/* Match the theme skins' hover state; they outrank a plain class selector. */
+.context-menu.ssh-config-host-menu button.ssh-config-host-option.is-highlighted {
+  background: var(--selection-bg);
 }
 
 .ssh-config-host-option__alias {
