@@ -34,9 +34,9 @@ mod tests {
         let miniaturize = macos_traffic_light_target_center(window_height, titlebar_height, 1);
         let zoom = macos_traffic_light_target_center(window_height, titlebar_height, 2);
 
-        assert_eq!(close, (27.0, 796.0));
-        assert_eq!(miniaturize, (50.0, 796.0));
-        assert_eq!(zoom, (73.0, 796.0));
+        assert_eq!(close, (27.0, 802.0));
+        assert_eq!(miniaturize, (50.0, 802.0));
+        assert_eq!(zoom, (73.0, 802.0));
         assert_eq!(close.0 - MACOS_TRAFFIC_LIGHT_FRAME_SIZE / 2.0, 20.0);
     }
 
@@ -44,7 +44,7 @@ mod tests {
     #[test]
     fn macos_traffic_lights_stay_centered_when_interface_zoom_changes() {
         for (percent, expected_top_inset) in
-            [(80, 19.2), (100, 24.0), (120, 28.8), (140, 33.6), (200, 48.0)]
+            [(80, 14.4), (100, 18.0), (120, 21.6), (140, 25.2), (200, 36.0)]
         {
             for window_height in [820.0, 1000.0] {
                 let titlebar_height = macos_renderer_titlebar_height(percent);

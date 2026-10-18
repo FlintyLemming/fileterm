@@ -1,7 +1,8 @@
 .fs-shell {
+  --window-tabbar-height: 36px;
   display: grid;
   grid-template-columns: var(--sidebar-width, 256px) minmax(0, 1fr) auto;
-  grid-template-rows: 48px minmax(0, 1fr) 24px;
+  grid-template-rows: var(--window-tabbar-height) minmax(0, 1fr) 24px;
   width: 100vw;
   height: 100vh;
   overflow: hidden;
@@ -17,13 +18,12 @@
 
 .fs-shell.has-window-menubar {
   --window-menubar-height: 28px;
-  --window-tabbar-height: 48px;
   grid-template-rows: var(--window-menubar-height) var(--window-tabbar-height) minmax(0, 1fr) 24px;
 }
 
 .fs-shell.is-local-terminal {
   grid-template-columns: var(--sidebar-width, 256px) minmax(0, 1fr) 0;
-  grid-template-rows: 48px minmax(0, 1fr);
+  grid-template-rows: var(--window-tabbar-height) minmax(0, 1fr);
 }
 
 .fs-shell.has-window-menubar.is-local-terminal {
@@ -995,7 +995,7 @@
 
 .fs-shell.has-window-menubar .fs-tabbar {
   grid-row: 2;
-  height: var(--window-tabbar-height, 48px);
+  height: var(--window-tabbar-height);
 }
 
 /* Overview sorting owns the pointer stream. Keep the renderer/native window

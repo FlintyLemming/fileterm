@@ -141,8 +141,8 @@
   flex: 0 0 auto;
   justify-content: space-between;
   gap: 12px;
-  height: 48px;
-  min-height: 48px;
+  height: var(--window-tabbar-height);
+  min-height: var(--window-tabbar-height);
   box-sizing: border-box;
   padding: 0 12px 0 14px;
   border-bottom: 1px solid var(--border-light);
@@ -4022,7 +4022,7 @@
   }
 
   .fs-shell.has-ai-copilot .ai-copilot-panel {
-    top: 56px;
+    top: calc(var(--window-tabbar-height) + 8px);
     right: 8px;
     bottom: 8px;
     width: min(344px, calc(100vw - 24px));
