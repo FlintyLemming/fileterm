@@ -35,7 +35,7 @@ export function ConnectionSshAuthSection({
     <fieldset className="ssh-fieldset">
       <legend>{t.auth}</legend>
       <div className="ssh-grid ssh-grid-auth">
-        {form.type === 'ssh' ? (
+        {form.type === 'ssh' && form.authType !== 'sshConfig' ? (
           <label className="span-2">
             {t.method}:
             <DropdownSelect
@@ -46,8 +46,7 @@ export function ConnectionSshAuthSection({
                 { value: 'keyboard-interactive', label: t.keyboardInteractiveAuth },
                 { value: 'jumpserver-koko-mfa', label: t.jumpServerKokoMfaAuth },
                 { value: 'kubernetes', label: t.kubernetesAuth },
-                { value: 'system', label: t.systemSshAuth },
-                { value: 'sshConfig', label: t.sshConfigAuth }
+                { value: 'system', label: t.systemSshAuth }
               ]}
               onChange={(value) => setForm((prev) => ({ ...prev, authType: value as CreateProfileInput['authType'] }))}
             />

@@ -911,7 +911,7 @@ const zhCN = {
   kubernetesAuth: 'Kubernetes 模式',
   systemSshAuth: '系统 SSH（agent/默认私钥）',
   systemSshAuthHint: '优先复用本机 SSH agent，其次尝试 ~/.ssh 下的默认私钥。',
-  sshConfigAuth: 'SSH config 别名（~/.ssh/config）',
+  sshConfigConnectionType: 'SSH（ssh config）',
   sshConfigAuthHint:
     'HostName、Port、User、IdentityFile、IdentitiesOnly、IdentityAgent 与 ProxyJump 都在连接时从 ~/.ssh/config 读取。IdentityFile 可以只指向 .pub 公钥，私钥留在 SSH agent（如 Bitwarden）里完成签名，无需提供私钥内容。',
   sshConfigUsernamePlaceholder: '留空使用 ssh config 中的 User',
@@ -919,8 +919,7 @@ const zhCN = {
   sshConfigAliasPlaceholder: '与 ssh 命令后面的名称相同，例如 my-server',
   sshConfigAliasHint:
     '按 OpenSSH 规则解析（含 Host *、Include、Match host、ProxyJump）；不在配置中的名称会直接作为主机名使用。',
-  sshConfigPickHost: '从 ~/.ssh/config 选择',
-  sshConfigPickHostPlaceholder: '选择一个 Host',
+  sshConfigAliasPickPlaceholder: '输入或选择 ~/.ssh/config 中的 Host',
   sshConfigResolvedTarget: '将连接到',
   sshConfigResolvedVia: '经由',
   sshAgentSettings: 'SSH agent',
@@ -2978,7 +2977,7 @@ const enUS: typeof zhCN = {
   kubernetesAuth: 'Kubernetes mode',
   systemSshAuth: 'System SSH (agent/default key)',
   systemSshAuthHint: 'Reuse the local SSH agent first, then fall back to default keys under ~/.ssh.',
-  sshConfigAuth: 'SSH config alias (~/.ssh/config)',
+  sshConfigConnectionType: 'SSH (ssh config)',
   sshConfigAuthHint:
     'HostName, Port, User, IdentityFile, IdentitiesOnly, IdentityAgent and ProxyJump are read from ~/.ssh/config when connecting. IdentityFile may point to a .pub public key; the private key stays in the SSH agent (for example Bitwarden), which signs the login, so no private key content is needed.',
   sshConfigUsernamePlaceholder: 'Leave empty to use User from ssh config',
@@ -2986,8 +2985,7 @@ const enUS: typeof zhCN = {
   sshConfigAliasPlaceholder: 'The name you type after ssh, e.g. my-server',
   sshConfigAliasHint:
     'Resolved with OpenSSH rules (Host *, Include, Match host, ProxyJump). A name that is not in the config is used as the hostname.',
-  sshConfigPickHost: 'Pick from ~/.ssh/config',
-  sshConfigPickHostPlaceholder: 'Choose a Host',
+  sshConfigAliasPickPlaceholder: 'Type or pick a Host from ~/.ssh/config',
   sshConfigResolvedTarget: 'Connects to',
   sshConfigResolvedVia: 'via',
   sshAgentSettings: 'SSH agent',
