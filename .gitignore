@@ -31,6 +31,9 @@ __pycache__/
 .git/
 .antigravitycli/
 .vscode/
-.claude/
+.claude/*
+!.claude/settings.json
+!.claude/hooks/
+!.claude/scripts/
 .githooks/
 .workbuddy/
