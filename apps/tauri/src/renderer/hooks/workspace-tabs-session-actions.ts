@@ -133,6 +133,15 @@ export function createWorkspaceTabsSessionActions(context: WorkspaceTabsActionCo
       return
     }
 
+    // A profile can be opened from several controls (and a double-click can
+    // arrive before React has rendered the busy state). Coalesce only the
+    // in-flight request for this profile; once it settles, opening it again
+    // remains an intentional way to create another session tab.
+    if (context.openingProfileIdsRef.current.has(profileId)) {
+      return
+    }
+    context.openingProfileIdsRef.current.add(profileId)
+
     const activeHomeId = context.isHomeWorkspaceVisible ? context.activeLocalTabIdForUi : null
     const replacementKey = activeHomeId ? homeTabKey(activeHomeId) : null
     pendingHomeReplacementKeyRef.current = replacementKey
@@ -153,6 +162,7 @@ export function createWorkspaceTabsSessionActions(context: WorkspaceTabsActionCo
       pendingHomeReplacementKeyRef.current = null
       onError('打开连接', error)
     } finally {
+      context.openingProfileIdsRef.current.delete(profileId)
       onBusyChange(false)
     }
   }

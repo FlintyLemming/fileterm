@@ -138,6 +138,8 @@ export type WorkspaceTabsActionContext = Pick<
   localTabsRef: MutableRefObject<LocalTab[]>
   pendingHomeReplacementKeyRef: MutableRefObject<string | null>
   pendingProfileOpenIdRef: MutableRefObject<string | null>
+  /** Profiles currently being opened; prevents duplicate click/double-click requests. */
+  openingProfileIdsRef: MutableRefObject<Set<string>>
 }
 
 export type { CommandExecutionOptions, LocalTerminalLaunchOptions, PaneFocusDirection, SendScope, SessionSendTarget }
