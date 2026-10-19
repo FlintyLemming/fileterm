@@ -23,6 +23,7 @@ pub fn app_get_ui_preferences(app: AppHandle) -> Result<UiPreferences, AppError>
             ui_zoom_percent: default_ui_zoom_percent(),
             remember_window_size: default_remember_window_size(),
             tab_bar_layout: default_tab_bar_layout(),
+            compact_tab_bar: default_compact_tab_bar(),
             legacy_file_list_font_size: None,
             local_terminal_shells: default_local_terminal_shells(),
             file_panel_remember_ratio: default_file_panel_remember_ratio(),
@@ -109,6 +110,9 @@ pub fn app_set_ui_preferences(
     }
     if let Some(tab_bar_layout) = input.tab_bar_layout {
         preferences.tab_bar_layout = tab_bar_layout;
+    }
+    if let Some(compact_tab_bar) = input.compact_tab_bar {
+        preferences.compact_tab_bar = compact_tab_bar;
     }
     if let Some(local_terminal_shells) = input.local_terminal_shells {
         if let Some(value) = local_terminal_shells.win32 {
@@ -337,6 +341,7 @@ pub fn app_toggle_terminal_zoom_lock(app: AppHandle) -> Result<UiPreferences, Ap
             ui_zoom_percent: None,
             remember_window_size: None,
             tab_bar_layout: None,
+            compact_tab_bar: None,
             local_terminal_shells: None,
             file_panel_remember_ratio: None,
             resource_monitoring_metrics: None,
@@ -372,6 +377,7 @@ pub fn app_toggle_ui_zoom_lock(app: AppHandle) -> Result<UiPreferences, AppError
             ui_zoom_percent: None,
             remember_window_size: None,
             tab_bar_layout: None,
+            compact_tab_bar: None,
             local_terminal_shells: None,
             file_panel_remember_ratio: None,
             resource_monitoring_metrics: None,
@@ -414,6 +420,7 @@ pub fn app_adjust_ui_zoom(app: AppHandle, operation: &str) -> Result<UiPreferenc
             ui_zoom_percent: Some(next),
             remember_window_size: None,
             tab_bar_layout: None,
+            compact_tab_bar: None,
             local_terminal_shells: None,
             file_panel_remember_ratio: None,
             resource_monitoring_metrics: None,

@@ -55,6 +55,8 @@ pub struct UiPreferences {
     pub remember_window_size: bool,
     #[serde(default = "default_tab_bar_layout")]
     pub tab_bar_layout: String,
+    #[serde(default = "default_compact_tab_bar")]
+    pub compact_tab_bar: bool,
     // Preserve the previous file-list-only zoom when reading an older state
     // file, then omit the legacy key on the next preference save.
     #[serde(default, skip_serializing, alias = "fileListFontSize")]
@@ -99,6 +101,7 @@ pub struct UiPreferencesInput {
     pub ui_zoom_percent: Option<i32>,
     pub remember_window_size: Option<bool>,
     pub tab_bar_layout: Option<String>,
+    pub compact_tab_bar: Option<bool>,
     pub local_terminal_shells: Option<LocalTerminalShellPreferencesInput>,
     pub file_panel_remember_ratio: Option<bool>,
     pub resource_monitoring_metrics: Option<Vec<String>>,
@@ -211,6 +214,10 @@ fn default_remember_window_size() -> bool {
 
 fn default_tab_bar_layout() -> String {
     "host-groups".to_string()
+}
+
+fn default_compact_tab_bar() -> bool {
+    true
 }
 
 fn default_ui_zoom_percent() -> i32 {

@@ -29,7 +29,7 @@ mod tests {
     #[test]
     fn macos_traffic_lights_use_absolute_renderer_titlebar_geometry() {
         let window_height = 820.0;
-        let titlebar_height = macos_renderer_titlebar_height(100);
+        let titlebar_height = macos_renderer_titlebar_height(100, true);
         let close = macos_traffic_light_target_center(window_height, titlebar_height, 0);
         let miniaturize = macos_traffic_light_target_center(window_height, titlebar_height, 1);
         let zoom = macos_traffic_light_target_center(window_height, titlebar_height, 2);
@@ -43,11 +43,20 @@ mod tests {
     #[cfg(target_os = "macos")]
     #[test]
     fn macos_traffic_lights_stay_centered_when_interface_zoom_changes() {
-        for (percent, expected_top_inset) in
-            [(80, 14.4), (100, 18.0), (120, 21.6), (140, 25.2), (200, 36.0)]
-        {
+        for (compact_tab_bar, percent, expected_top_inset) in [
+            (true, 80, 14.4),
+            (true, 100, 18.0),
+            (true, 120, 21.6),
+            (true, 140, 25.2),
+            (true, 200, 36.0),
+            (false, 80, 19.2),
+            (false, 100, 24.0),
+            (false, 120, 28.8),
+            (false, 140, 33.6),
+            (false, 200, 48.0),
+        ] {
             for window_height in [820.0, 1000.0] {
-                let titlebar_height = macos_renderer_titlebar_height(percent);
+                let titlebar_height = macos_renderer_titlebar_height(percent, compact_tab_bar);
                 for (index, expected_x) in [27.0, 50.0, 73.0].into_iter().enumerate() {
                     let (x, y) =
                         macos_traffic_light_target_center(window_height, titlebar_height, index);

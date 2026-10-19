@@ -4,6 +4,7 @@ thread_local! {
 }
 
 static MACOS_TITLEBAR_ZOOM: std::sync::atomic::AtomicI32 = std::sync::atomic::AtomicI32::new(100);
+static MACOS_TITLEBAR_COMPACT: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(true);
 
 struct MacosTitlebarLayoutGuard;
 
@@ -27,6 +28,10 @@ fn refresh_macos_titlebar_zoom(app: &AppHandle<Wry>) {
         .as_ref()
         .map_or(100, |value| value.ui_zoom_percent);
     MACOS_TITLEBAR_ZOOM.store(percent, Ordering::Relaxed);
+    let compact_tab_bar = preferences
+        .as_ref()
+        .is_none_or(|value| value.compact_tab_bar);
+    MACOS_TITLEBAR_COMPACT.store(compact_tab_bar, Ordering::Relaxed);
     if let (Some(preferences), Some(window)) = (preferences, app.get_webview_window("main")) {
         if let Err(error) =
             window.set_theme(Some(macos_native_theme(&preferences.theme_config.variant)))
@@ -103,10 +108,12 @@ fn calibrate_macos_traffic_lights(window: &WebviewWindow<Wry>) -> bool {
         (&zoom, &zoom_superview),
     ];
     let window_height = ns_window.frame().size.height;
-    // WebView page zoom scales the renderer's 36px title bar, while AppKit
-    // stays in logical points. Use the same persisted zoom for native layout.
+    // WebView page zoom scales the renderer's 36px (compact) or 48px title
+    // bar, while AppKit stays in logical points. Use the same persisted zoom
+    // and tab bar height for native layout.
     let ui_zoom_percent = MACOS_TITLEBAR_ZOOM.load(Ordering::Relaxed);
-    let titlebar_height = macos_renderer_titlebar_height(ui_zoom_percent);
+    let compact_tab_bar = MACOS_TITLEBAR_COMPACT.load(Ordering::Relaxed);
+    let titlebar_height = macos_renderer_titlebar_height(ui_zoom_percent, compact_tab_bar);
     let Some(titlebar_container) = (unsafe { close_superview.superview() }) else {
         return false;
     };

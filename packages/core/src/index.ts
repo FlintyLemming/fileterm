@@ -2136,6 +2136,8 @@ export type AppIconVariant = 'classic' | 'material' | 'clean'
 /** Session tabs grouped under a host list, or every tab in one row. */
 export type TabBarLayout = 'host-groups' | 'single-row'
 export const DEFAULT_TAB_BAR_LAYOUT: TabBarLayout = 'host-groups'
+/** Compact tab bars are 36px tall; the original height is 48px. */
+export const DEFAULT_COMPACT_TAB_BAR = true
 
 export interface UiPreferences {
   theme: ThemeMode
@@ -2152,6 +2154,7 @@ export interface UiPreferences {
   uiZoomPercent: number
   rememberWindowSize: boolean
   tabBarLayout: TabBarLayout
+  compactTabBar: boolean
   localTerminalShells: LocalTerminalShellPreferences
   filePanelRememberRatio: boolean
   resourceMonitoringMetrics: ResourceMonitoringMetric[]
@@ -2179,6 +2182,7 @@ export interface UiPreferencesInput {
   uiZoomPercent?: number
   rememberWindowSize?: boolean
   tabBarLayout?: TabBarLayout
+  compactTabBar?: boolean
   localTerminalShells?: Partial<LocalTerminalShellPreferences>
   filePanelRememberRatio?: boolean
   resourceMonitoringMetrics?: ResourceMonitoringMetric[]

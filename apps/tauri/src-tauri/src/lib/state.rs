@@ -29,7 +29,9 @@ struct HiddenWithMainRegistry {
 }
 
 #[cfg(target_os = "macos")]
-const MACOS_RENDERER_TITLEBAR_BASE_HEIGHT: f64 = 36.0;
+const MACOS_RENDERER_COMPACT_TITLEBAR_BASE_HEIGHT: f64 = 36.0;
+#[cfg(target_os = "macos")]
+const MACOS_RENDERER_TITLEBAR_BASE_HEIGHT: f64 = 48.0;
 #[cfg(target_os = "macos")]
 const MACOS_TRAFFIC_LIGHT_FRAME_SIZE: f64 = 14.0;
 #[cfg(target_os = "macos")]
@@ -38,8 +40,13 @@ const MACOS_TRAFFIC_LIGHT_LEFT_INSET: f64 = 20.0;
 const MACOS_TRAFFIC_LIGHT_CENTER_SPACING: f64 = 23.0;
 
 #[cfg(target_os = "macos")]
-fn macos_renderer_titlebar_height(ui_zoom_percent: i32) -> f64 {
-    MACOS_RENDERER_TITLEBAR_BASE_HEIGHT * f64::from(ui_zoom_percent) / 100.0
+fn macos_renderer_titlebar_height(ui_zoom_percent: i32, compact_tab_bar: bool) -> f64 {
+    let base_height = if compact_tab_bar {
+        MACOS_RENDERER_COMPACT_TITLEBAR_BASE_HEIGHT
+    } else {
+        MACOS_RENDERER_TITLEBAR_BASE_HEIGHT
+    };
+    base_height * f64::from(ui_zoom_percent) / 100.0
 }
 
 #[cfg(target_os = "macos")]

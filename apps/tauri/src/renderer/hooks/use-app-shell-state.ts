@@ -29,6 +29,7 @@ import { useWorkspaceIpcSync } from './use-workspace-ipc-sync'
 import { useSessionSecurity } from './use-session-security'
 import { useThemeMode, type ThemeMode } from './use-theme-mode'
 import { useTabBarLayout } from '../features/layout/use-tab-bar-layout'
+import { useCompactTabBar } from '../features/layout/use-compact-tab-bar'
 import {
   DEFAULT_FILE_PANEL_SNAP_TARGET,
   isFilePanelSnapTarget,
@@ -47,6 +48,7 @@ export type InitialUiPreferences = Pick<
   | 'uiZoomPercent'
   | 'rememberWindowSize'
   | 'tabBarLayout'
+  | 'compactTabBar'
   | 'filePanelRememberRatio'
   | 'resourceMonitoringMetrics'
   | 'resourceMonitoringMetricOrder'
@@ -142,6 +144,7 @@ export function useAppShellState({
   )
   const [rememberWindowSize, setRememberWindowSize] = useState(() => initialUiPreferences?.rememberWindowSize ?? false)
   const [tabBarLayout] = useTabBarLayout(desktopApi, initialUiPreferences?.tabBarLayout)
+  const [compactTabBar] = useCompactTabBar(desktopApi, initialUiPreferences?.compactTabBar)
   useLayoutEffect(() => {
     void applyUiZoomPercent(uiZoomPercent)
   }, [uiZoomPercent])
@@ -514,6 +517,7 @@ export function useAppShellState({
     rememberWindowSize,
     setRememberWindowSize,
     tabBarLayout,
+    compactTabBar,
     filePanelRememberRatio,
     setFilePanelRememberRatio,
     resourceMonitoringMetrics,

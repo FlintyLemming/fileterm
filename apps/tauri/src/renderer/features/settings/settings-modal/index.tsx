@@ -11,7 +11,6 @@ import { AgentSettingsPanel } from './panels/agent-settings-panel'
 import { ConnectionsSettingsPanel } from './panels/connections-settings-panel'
 import { InterfaceSettingsPanel } from './panels/interface-settings-panel'
 import { LanguageSettingsPanel } from './panels/language-settings-panel'
-import { LayoutSettingsPanel } from './panels/layout-settings-panel'
 import { LocalTerminalSettingsPanel } from './panels/local-terminal-settings-panel'
 import { SyncSettingsPanel } from './panels/sync-settings-panel'
 import { SystemSettingsPanel } from './panels/system-settings-panel'
@@ -145,8 +144,6 @@ export function SettingsModal({
             {activeTab === 'connections' ? <ConnectionsSettingsPanel /> : null}
 
             {activeTab === 'interface' ? <InterfaceSettingsPanel /> : null}
-
-            {activeTab === 'layout' ? <LayoutSettingsPanel /> : null}
 
             {activeTab === 'tools' ? <ToolsSettingsPanel /> : null}
 

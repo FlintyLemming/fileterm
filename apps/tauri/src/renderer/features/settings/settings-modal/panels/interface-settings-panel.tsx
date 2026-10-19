@@ -1,28 +1,18 @@
 import { getThemeControlSurfaces } from '../../../../app/theme-config'
 import './interface-font-settings.css'
 import './interface-settings-panel.css'
-import type { Dispatch, SetStateAction, PointerEvent as ReactPointerEvent } from 'react'
-import type {
-  AppIconVariant,
-  FileTermDesktopApi,
-  ImportedFont,
-  OverviewSectionId,
-  SavedTheme,
-  TerminalAnsiColorName,
-  ThemeConfig
-} from '@fileterm/core'
-import { MAX_UI_ZOOM_PERCENT, MIN_UI_ZOOM_PERCENT, UI_ZOOM_PERCENT_STEP } from '@fileterm/core'
+import type { Dispatch, SetStateAction } from 'react'
+import type { FileTermDesktopApi, ImportedFont, SavedTheme, TerminalAnsiColorName, ThemeConfig } from '@fileterm/core'
 import { AppIcon } from '../../../common/app-icon'
-import { managerDropClass } from '../../../common/manager-drag'
-import { targetsNestedManagerControl } from '../../../common/manager-interactions'
 import { ConfirmActionDialog } from '../../../common/confirm-action-dialog'
 import { DropdownSelect } from '../../../common/dropdown-select'
-import { SelectionControl } from '../../../common/selection-control'
-import { RadioCardGroup } from '../../../common/radio-card-group'
 import { StableButtonContent } from '../../../common/stable-button-content'
 import { type LocaleMessages } from '../../../../i18n'
 import { useSettingsModalContext } from '../context'
 import { useSystemFontAvailability } from '../../../../app/use-system-font-availability'
+import { InterfaceDisplaySettingsSections } from './interface-display-settings'
+import { LayoutSettingsSection } from './layout-settings-section'
+import { OverviewContentSettingsSection } from './overview-content-settings-section'
 import {
   ANSI_COLOR_LABELS,
   ANSI_COLOR_NAMES,
@@ -30,12 +20,6 @@ import {
   ThemeColorField,
   type ThemePresetVariant
 } from '../constants'
-import dockClassic from '../../../../assets/app-icons/dock-classic.png'
-import dockMaterial from '../../../../assets/app-icons/dock-material.png'
-import dockClean from '../../../../assets/app-icons/dock-clean.png'
-import platformClassic from '../../../../../../src-tauri/icons/app/shared/classic-512.png'
-import platformMaterial from '../../../../../../src-tauri/icons/app/shared/material-512.png'
-import platformClean from '../../../../../../src-tauri/icons/app/shared/clean-512.png'
 
 type InterfaceSettingsPanelContext = {
   t: LocaleMessages
@@ -74,51 +58,6 @@ type InterfaceSettingsPanelContext = {
   updateTerminalTheme(patch: Partial<ThemeConfig['theme']['terminal']>): void
   updateTerminalAnsiColor(name: TerminalAnsiColorName, value: string): void
   updateTerminalSearchColors(patch: Partial<ThemeConfig['theme']['terminal']['search']>): void
-  terminalZoomLocked: boolean
-  isSavingTerminalZoomPreference: boolean
-  terminalZoomPreferenceError: string | null
-  setTerminalZoomLockPreference(nextValue: boolean): void
-  filePanelRememberRatio: boolean
-  isSavingFilePanelPreference: boolean
-  filePanelPreferenceError: string | null
-  setFilePanelRememberRatioPreference(nextValue: boolean): void
-  rememberWindowSize: boolean
-  isSavingWindowSizePreference: boolean
-  windowSizePreferenceError: string | null
-  setRememberWindowSizePreference(nextValue: boolean): void
-  showMacosMenuBarIcon: boolean
-  isSavingMacosMenuBarIcon: boolean
-  macosMenuBarIconPreferenceError: string | null
-  setMacosMenuBarIconPreference(nextValue: boolean): void
-  appIcon: AppIconVariant
-  isSavingAppIcon: boolean
-  appIconPreferenceError: string | null
-  setAppIconPreference(nextValue: AppIconVariant): void
-  uiZoomLocked: boolean
-  isSavingUiZoomPreference: boolean
-  uiZoomPreferenceError: string | null
-  setUiZoomLockPreference(nextValue: boolean): void
-  uiZoomPercent: number
-  isSavingUiZoomPercent: boolean
-  uiZoomPercentError: string | null
-  setUiZoomPercentPreference(nextValue: number): void
-  overviewShowStats: boolean
-  overviewShowRecent: boolean
-  overviewShowAllConnections: boolean
-  overviewShowQuickActions: boolean
-  overviewSectionOrder: OverviewSectionId[]
-  overviewSectionMeta: Record<OverviewSectionId, { title: string; hint: string }>
-  draggingOverviewSection: OverviewSectionId | null
-  dragOverOverviewSection: OverviewSectionId | null
-  overviewDragPosition: 'top' | 'bottom' | 'inside' | null
-  isSavingOverviewPreference: boolean
-  overviewPreferenceError: string | null
-  suppressOverviewCardClickRef: { current: boolean }
-  setOverviewShowStatsPreference(nextValue: boolean): void
-  setOverviewShowRecentPreference(nextValue: boolean): void
-  setOverviewShowAllConnectionsPreference(nextValue: boolean): void
-  setOverviewShowQuickActionsPreference(nextValue: boolean): void
-  handleOverviewPointerDown(event: ReactPointerEvent<HTMLElement>, source: OverviewSectionId): void
 }
 
 export function InterfaceSettingsPanel() {
@@ -159,63 +98,8 @@ export function InterfaceSettingsPanel() {
     updateThemeFonts,
     updateTerminalTheme,
     updateTerminalAnsiColor,
-    updateTerminalSearchColors,
-    terminalZoomLocked,
-    isSavingTerminalZoomPreference,
-    terminalZoomPreferenceError,
-    setTerminalZoomLockPreference,
-    filePanelRememberRatio,
-    isSavingFilePanelPreference,
-    filePanelPreferenceError,
-    setFilePanelRememberRatioPreference,
-    rememberWindowSize,
-    isSavingWindowSizePreference,
-    windowSizePreferenceError,
-    setRememberWindowSizePreference,
-    showMacosMenuBarIcon,
-    isSavingMacosMenuBarIcon,
-    macosMenuBarIconPreferenceError,
-    setMacosMenuBarIconPreference,
-    appIcon,
-    isSavingAppIcon,
-    appIconPreferenceError,
-    setAppIconPreference,
-    uiZoomLocked,
-    isSavingUiZoomPreference,
-    uiZoomPreferenceError,
-    setUiZoomLockPreference,
-    uiZoomPercent,
-    isSavingUiZoomPercent,
-    uiZoomPercentError,
-    setUiZoomPercentPreference,
-    overviewShowStats,
-    overviewShowRecent,
-    overviewShowAllConnections,
-    overviewShowQuickActions,
-    overviewSectionOrder,
-    overviewSectionMeta,
-    draggingOverviewSection,
-    dragOverOverviewSection,
-    overviewDragPosition,
-    isSavingOverviewPreference,
-    overviewPreferenceError,
-    suppressOverviewCardClickRef,
-    setOverviewShowStatsPreference,
-    setOverviewShowRecentPreference,
-    setOverviewShowAllConnectionsPreference,
-    setOverviewShowQuickActionsPreference,
-    handleOverviewPointerDown
+    updateTerminalSearchColors
   } = useSettingsModalContext<InterfaceSettingsPanelContext>()
-  const appIconHint =
-    desktopApi?.platform === 'win32'
-      ? t.appIconHintWindows
-      : desktopApi?.platform === 'linux'
-        ? t.appIconHintLinux
-        : t.appIconHintMac
-  const appIconPreviews =
-    desktopApi?.platform === 'darwin'
-      ? { classic: dockClassic, material: dockMaterial, clean: dockClean }
-      : { classic: platformClassic, material: platformMaterial, clean: platformClean }
 
   return (
     <div className="settings-panel">
@@ -757,272 +641,11 @@ export function InterfaceSettingsPanel() {
         ) : null}
       </section>
 
-      <section className="settings-section">
-        <h3>{t.terminalDisplaySettings}</h3>
-        <p className="settings-tools-hint">{t.terminalDisplaySettingsHint}</p>
-        <div
-          aria-busy={isSavingTerminalZoomPreference}
-          className="overview-preference-list"
-          inert={isSavingTerminalZoomPreference}
-        >
-          <label className="overview-preference-row">
-            <span className="overview-preference-copy">
-              <strong>{t.lockTerminalZoom}</strong>
-              <p>{t.lockTerminalZoomHint}</p>
-            </span>
-            <span className="command-toggle overview-preference-toggle">
-              <SelectionControl
-                checked={terminalZoomLocked}
-                disabled={!desktopApi}
-                onChange={(event) => setTerminalZoomLockPreference(event.target.checked)}
-                type="checkbox"
-              />
-            </span>
-          </label>
-        </div>
-        {terminalZoomPreferenceError ? <p className="modal-error">{terminalZoomPreferenceError}</p> : null}
-      </section>
+      <InterfaceDisplaySettingsSections />
 
-      <section className="settings-section">
-        <h3>{t.displayAndFilePanelSettings}</h3>
-        <p className="settings-tools-hint">{t.displayAndFilePanelSettingsHint}</p>
-        <div aria-busy={isSavingUiZoomPercent} className="theme-config-control" inert={isSavingUiZoomPercent}>
-          <span className="theme-config-label">{t.uiZoomPercent}</span>
-          <DropdownSelect
-            ariaLabel={t.uiZoomPercent}
-            className="theme-config-select"
-            disabled={!desktopApi}
-            onChange={(value) => setUiZoomPercentPreference(Number(value))}
-            options={Array.from(
-              { length: (MAX_UI_ZOOM_PERCENT - MIN_UI_ZOOM_PERCENT) / UI_ZOOM_PERCENT_STEP + 1 },
-              (_, index) => {
-                const percent = MIN_UI_ZOOM_PERCENT + index * UI_ZOOM_PERCENT_STEP
-                return { value: String(percent), label: `${percent}%` }
-              }
-            )}
-            value={String(uiZoomPercent)}
-          />
-        </div>
-        {uiZoomPercentError ? <p className="modal-error">{uiZoomPercentError}</p> : null}
-        <div className="overview-preference-list">
-          <label
-            aria-busy={isSavingUiZoomPreference}
-            className="overview-preference-row"
-            inert={isSavingUiZoomPreference}
-          >
-            <span className="overview-preference-copy">
-              <strong>{t.lockUiZoom}</strong>
-              <p>{t.lockUiZoomHint}</p>
-            </span>
-            <span className="command-toggle overview-preference-toggle">
-              <SelectionControl
-                checked={uiZoomLocked}
-                disabled={!desktopApi}
-                onChange={(event) => setUiZoomLockPreference(event.target.checked)}
-                type="checkbox"
-              />
-            </span>
-          </label>
-          <label
-            aria-busy={isSavingFilePanelPreference}
-            className="overview-preference-row"
-            inert={isSavingFilePanelPreference}
-          >
-            <span className="overview-preference-copy">
-              <strong>{t.rememberFilePanelRatio}</strong>
-              <p>{t.rememberFilePanelRatioHint}</p>
-            </span>
-            <span className="command-toggle overview-preference-toggle">
-              <SelectionControl
-                checked={filePanelRememberRatio}
-                disabled={!desktopApi}
-                onChange={(event) => setFilePanelRememberRatioPreference(event.target.checked)}
-                type="checkbox"
-              />
-            </span>
-          </label>
-        </div>
-        {uiZoomPreferenceError ? <p className="modal-error">{uiZoomPreferenceError}</p> : null}
-        {filePanelPreferenceError ? <p className="modal-error">{filePanelPreferenceError}</p> : null}
-      </section>
+      <LayoutSettingsSection />
 
-      {desktopApi && ['darwin', 'win32', 'linux'].includes(desktopApi.platform) ? (
-        <section className="settings-section">
-          <h3>{t.appIcon}</h3>
-          <p className="settings-tools-hint">{appIconHint}</p>
-          <RadioCardGroup
-            ariaLabel={t.appIcon}
-            className="app-icon-picker"
-            disabled={isSavingAppIcon}
-            name="app-icon-variant"
-            onChange={(value) => setAppIconPreference(value)}
-            options={[
-              {
-                value: 'classic',
-                label: (
-                  <>
-                    <img alt="" src={appIconPreviews.classic} />
-                    <span>{t.appIconClassic}</span>
-                  </>
-                ),
-                description: t.appIconClassicHint
-              },
-              {
-                value: 'material',
-                label: (
-                  <>
-                    <img alt="" src={appIconPreviews.material} />
-                    <span>{t.appIconMaterial}</span>
-                  </>
-                ),
-                description: t.appIconMaterialHint
-              },
-              {
-                value: 'clean',
-                label: (
-                  <>
-                    <img alt="" src={appIconPreviews.clean} />
-                    <span>{t.appIconClean}</span>
-                  </>
-                ),
-                description: t.appIconCleanHint
-              }
-            ]}
-            value={appIcon}
-          />
-          {appIconPreferenceError ? <p className="modal-error">{appIconPreferenceError}</p> : null}
-        </section>
-      ) : null}
-
-      <section className="settings-section">
-        <h3>{t.windowStartupSettings}</h3>
-        {desktopApi?.platform === 'darwin' ? (
-          <div className="overview-preference-list">
-            <label
-              aria-busy={isSavingMacosMenuBarIcon}
-              className="overview-preference-row"
-              inert={isSavingMacosMenuBarIcon}
-            >
-              <span className="overview-preference-copy">
-                <strong>{t.showMacosMenuBarIcon}</strong>
-                <p>{t.showMacosMenuBarIconHint}</p>
-              </span>
-              <span className="command-toggle overview-preference-toggle">
-                <SelectionControl
-                  checked={showMacosMenuBarIcon}
-                  disabled={!desktopApi}
-                  onChange={(event) => setMacosMenuBarIconPreference(event.target.checked)}
-                  type="checkbox"
-                />
-              </span>
-            </label>
-          </div>
-        ) : null}
-        {macosMenuBarIconPreferenceError ? <p className="modal-error">{macosMenuBarIconPreferenceError}</p> : null}
-        <div className="overview-preference-list">
-          <label
-            aria-busy={isSavingWindowSizePreference}
-            className="overview-preference-row"
-            inert={isSavingWindowSizePreference}
-          >
-            <span className="overview-preference-copy">
-              <strong>{t.rememberWindowSize}</strong>
-              <p>{t.rememberWindowSizeHint}</p>
-            </span>
-            <span className="command-toggle overview-preference-toggle">
-              <SelectionControl
-                checked={rememberWindowSize}
-                disabled={!desktopApi}
-                onChange={(event) => setRememberWindowSizePreference(event.target.checked)}
-                type="checkbox"
-              />
-            </span>
-          </label>
-        </div>
-        {windowSizePreferenceError ? <p className="modal-error">{windowSizePreferenceError}</p> : null}
-      </section>
-
-      <section className="settings-section">
-        <h3>{t.overviewContentSettings}</h3>
-        <p className="settings-tools-hint">{t.overviewContentSettingsHint}</p>
-        <div
-          aria-busy={isSavingOverviewPreference}
-          className="overview-preference-list"
-          inert={isSavingOverviewPreference}
-        >
-          {draggingOverviewSection && overviewSectionOrder[0] ? (
-            <div
-              aria-hidden="true"
-              className="overview-preference-top-drop-zone"
-              data-fileterm-sort-id={overviewSectionOrder[0]}
-              data-fileterm-sort-kind="overview-section-top"
-            />
-          ) : null}
-          {overviewSectionOrder.map((sectionId) => {
-            const isDragging = draggingOverviewSection === sectionId
-            const isDragOver = dragOverOverviewSection === sectionId
-            const sectionMeta = overviewSectionMeta[sectionId]
-            const checked =
-              sectionId === 'stats'
-                ? overviewShowStats
-                : sectionId === 'recent'
-                  ? overviewShowRecent
-                  : sectionId === 'allConnections'
-                    ? overviewShowAllConnections
-                    : overviewShowQuickActions
-
-            return (
-              <label
-                className={`overview-preference-row ${isDragging ? 'dragging' : ''} ${managerDropClass(isDragOver, overviewDragPosition)}`}
-                data-fileterm-sort-id={sectionId}
-                data-fileterm-sort-kind="overview-section"
-                draggable={false}
-                key={sectionId}
-                onClick={(event) => {
-                  if (suppressOverviewCardClickRef.current) {
-                    event.preventDefault()
-                    event.stopPropagation()
-                  }
-                }}
-                onPointerDown={(event) => {
-                  if (!isSavingOverviewPreference && !targetsNestedManagerControl(event)) {
-                    handleOverviewPointerDown(event, sectionId)
-                  }
-                }}
-              >
-                <span
-                  aria-label={t.overviewDragToReorder}
-                  className="material-symbols-outlined overview-preference-drag-handle"
-                  title={t.overviewDragToReorder}
-                >
-                  drag_indicator
-                </span>
-                <span className="overview-preference-copy">
-                  <strong>{sectionMeta.title}</strong>
-                  <p>{sectionMeta.hint}</p>
-                </span>
-                <span className="command-toggle overview-preference-toggle">
-                  <SelectionControl
-                    checked={checked}
-                    disabled={!desktopApi}
-                    onChange={(event) => {
-                      if (sectionId === 'stats') setOverviewShowStatsPreference(event.target.checked)
-                      else if (sectionId === 'recent') setOverviewShowRecentPreference(event.target.checked)
-                      else if (sectionId === 'allConnections') {
-                        setOverviewShowAllConnectionsPreference(event.target.checked)
-                      } else {
-                        setOverviewShowQuickActionsPreference(event.target.checked)
-                      }
-                    }}
-                    type="checkbox"
-                  />
-                </span>
-              </label>
-            )
-          })}
-        </div>
-        {overviewPreferenceError ? <p className="modal-error">{overviewPreferenceError}</p> : null}
-      </section>
+      <OverviewContentSettingsSection />
     </div>
   )
 }
