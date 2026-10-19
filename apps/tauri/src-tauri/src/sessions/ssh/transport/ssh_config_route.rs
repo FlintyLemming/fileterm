@@ -150,14 +150,37 @@ fn apply_ssh_config_host(profile: &mut Value, host: &crate::services::ssh_config
         SshConfigAgent::Disabled => ("disabled", Value::Null),
         SshConfigAgent::Socket(path) => ("socket", Value::String(path.clone())),
     };
+    let (forward_agent, forward_agent_socket) = match &host.forward_agent {
+        None => (false, Value::Null),
+        Some(SshConfigAgent::Socket(path)) => (true, Value::String(path.clone())),
+        Some(_) => (true, Value::Null),
+    };
     profile[SSH_CONFIG_RESOLVED_KEY] = serde_json::json!({
         "alias": host.alias,
+        "forwardAgent": forward_agent,
+        "forwardAgentSocket": forward_agent_socket,
         "identityFiles": path_list(&host.identity_files),
         "identitiesOnly": host.identities_only,
         "agent": agent_mode,
         "agentSocket": agent_socket,
         "knownHostsFiles": path_list(&host.known_hosts_files),
     });
+}
+
+/// Local agent to forward for a config hop (`ForwardAgent`). The inner
+/// `None` means the hop's authentication agent (`IdentityAgent`, the FileTerm
+/// setting, then the platform default).
+fn ssh_config_agent_forwarding(profile: &Value) -> Option<Option<String>> {
+    let resolved = profile.get(SSH_CONFIG_RESOLVED_KEY)?;
+    if resolved.get("forwardAgent").and_then(Value::as_bool) != Some(true) {
+        return None;
+    }
+    Some(
+        resolved
+            .get("forwardAgentSocket")
+            .and_then(Value::as_str)
+            .map(ToOwned::to_owned),
+    )
 }
 
 /// known_hosts files consulted for host-key verification of a config hop.

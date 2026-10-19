@@ -331,10 +331,64 @@ pub struct ClientHandler {
     /// OpenSSH known_hosts files for hops resolved from `~/.ssh/config`. A
     /// recorded matching key is trusted without prompting, like `ssh`.
     known_hosts_files: Vec<std::path::PathBuf>,
+    /// `ForwardAgent` for this hop: `Some(None)` forwards the platform default
+    /// agent, `Some(Some(path))` a specific socket / named pipe.
+    agent_forward_socket: Option<Option<String>>,
+}
+
+impl ClientHandler {
+    fn log_agent_forward_failure(&self, error: &str) {
+        crate::services::logging::session(
+            &self.app,
+            "WARN",
+            "ssh",
+            &self.tab_id,
+            format!("SSH agent forwarding rejected: {error}"),
+        );
+    }
 }
 
 impl Handler for ClientHandler {
     type Error = russh::Error;
+
+    async fn server_channel_open_agent_forward(
+        &mut self,
+        channel: Channel<russh::client::Msg>,
+        reply: russh::client::ChannelOpenHandle,
+        _session: &mut russh::client::Session,
+    ) -> Result<(), Self::Error> {
+        let Some(socket) = self.agent_forward_socket.clone() else {
+            reply
+                .reject(russh::ChannelOpenFailure::AdministrativelyProhibited)
+                .await;
+            return Ok(());
+        };
+        let agent = match timeout(
+            SSH_AGENT_FORWARD_CONNECT_TIMEOUT,
+            connect_ssh_agent_socket(socket.as_deref()),
+        )
+        .await
+        {
+            Ok(Ok(agent)) => agent,
+            Ok(Err(error)) => {
+                self.log_agent_forward_failure(&error);
+                reply.reject(russh::ChannelOpenFailure::ConnectFailed).await;
+                return Ok(());
+            }
+            Err(_) => {
+                self.log_agent_forward_failure("local SSH agent connect timed out");
+                reply.reject(russh::ChannelOpenFailure::ConnectFailed).await;
+                return Ok(());
+            }
+        };
+        reply.accept().await;
+        tokio::spawn(async move {
+            let mut agent = agent.into_inner();
+            let mut stream = channel.into_stream();
+            let _ = copy_bidirectional(&mut stream, &mut agent).await;
+        });
+        Ok(())
+    }
 
     async fn disconnected(
         &mut self,

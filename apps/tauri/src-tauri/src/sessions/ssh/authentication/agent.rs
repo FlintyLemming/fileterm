@@ -11,6 +11,10 @@ type DynSshAgentClient = russh::keys::agent::client::AgentClient<
 /// signing stage gets more time than a plain network round trip.
 const SSH_AGENT_SIGN_TIMEOUT: Duration = Duration::from_secs(120);
 
+/// Each forwarded agent request opens a new local agent connection; a missing
+/// agent must not stall the SSH event loop.
+const SSH_AGENT_FORWARD_CONNECT_TIMEOUT: Duration = Duration::from_secs(5);
+
 #[cfg(windows)]
 const WINDOWS_OPENSSH_AGENT_PIPE: &str = r"\\.\pipe\openssh-ssh-agent";
 

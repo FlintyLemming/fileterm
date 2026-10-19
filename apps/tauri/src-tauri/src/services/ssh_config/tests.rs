@@ -319,3 +319,34 @@ fn expand_user_path_handles_tilde() {
         PathBuf::from("/tmp/agent")
     );
 }
+
+#[test]
+fn forward_agent_follows_identity_agent_and_first_value() {
+    let home = TempHome::new(AGENT_STYLE_CONFIG);
+    assert_eq!(
+        resolve(&home, "lab-dev").forward_agent,
+        Some(SshConfigAgent::Default)
+    );
+
+    let home = TempHome::new(
+        "Host off\n  ForwardAgent no\nHost sock\n  IdentityAgent ~/agent.sock\n  ForwardAgent yes\nHost path\n  ForwardAgent ~/forward.sock\nHost noagent\n  IdentityAgent none\n  ForwardAgent yes\nHost *\n  ForwardAgent yes\n",
+    );
+    assert_eq!(resolve(&home, "off").forward_agent, None);
+    assert_eq!(
+        resolve(&home, "sock").forward_agent,
+        Some(SshConfigAgent::Socket(
+            home.path("agent.sock").to_string_lossy().into_owned()
+        ))
+    );
+    assert_eq!(
+        resolve(&home, "path").forward_agent,
+        Some(SshConfigAgent::Socket(
+            home.path("forward.sock").to_string_lossy().into_owned()
+        ))
+    );
+    assert_eq!(resolve(&home, "noagent").forward_agent, None);
+    assert_eq!(
+        resolve(&home, "other").forward_agent,
+        Some(SshConfigAgent::Default)
+    );
+}

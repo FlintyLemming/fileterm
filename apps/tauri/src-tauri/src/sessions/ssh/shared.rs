@@ -134,6 +134,9 @@ struct OpenSshSession {
     cleanup: SshSessionCleanup<ClientHandler>,
     remote_sshid: Vec<u8>,
     disconnect_reason: SharedSshDisconnectReason,
+    /// `ForwardAgent` resolved for the final hop; the shell channel requests
+    /// agent forwarding when set.
+    agent_forwarding: bool,
 }
 
 /// Which endpoint in an SSH connection flow owns an authentication prompt.

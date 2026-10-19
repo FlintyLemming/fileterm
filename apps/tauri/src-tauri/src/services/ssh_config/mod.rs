@@ -98,6 +98,9 @@ pub struct ResolvedSshHost {
     pub identity_files: Vec<PathBuf>,
     pub identities_only: bool,
     pub agent: SshConfigAgent,
+    /// `ForwardAgent`: `None` when disabled, otherwise the agent to forward
+    /// (`Default` follows `IdentityAgent`, like `ForwardAgent yes`).
+    pub forward_agent: Option<SshConfigAgent>,
     pub known_hosts_files: Vec<PathBuf>,
     pub connect_timeout_seconds: Option<u64>,
     proxy_jump: Vec<SshJumpSpec>,
@@ -310,24 +313,36 @@ pub fn resolve_host(
             identity_files.push(path);
         }
     }
+    let agent_socket = |value: &str| {
+        let resolved = match value.strip_prefix('$') {
+            Some(variable) if !variable.starts_with('{') => std::env::var(variable).ok(),
+            _ => Some(
+                expand_path_tokens(value, &context)
+                    .to_string_lossy()
+                    .into_owned(),
+            ),
+        };
+        match resolved.filter(|path| !path.trim().is_empty()) {
+            Some(path) => SshConfigAgent::Socket(path),
+            None => SshConfigAgent::Default,
+        }
+    };
     let agent = match options.value("identityagent") {
         None => SshConfigAgent::Default,
         Some(value) if value.eq_ignore_ascii_case("none") => SshConfigAgent::Disabled,
         Some("SSH_AUTH_SOCK") => SshConfigAgent::Default,
-        Some(value) => {
-            let resolved = match value.strip_prefix('$') {
-                Some(variable) if !variable.starts_with('{') => std::env::var(variable).ok(),
-                _ => Some(
-                    expand_path_tokens(value, &context)
-                        .to_string_lossy()
-                        .into_owned(),
-                ),
-            };
-            match resolved.filter(|path| !path.trim().is_empty()) {
-                Some(path) => SshConfigAgent::Socket(path),
-                None => SshConfigAgent::Default,
-            }
-        }
+        Some(value) => agent_socket(value),
+    };
+    // OpenSSH points SSH_AUTH_SOCK at IdentityAgent, so `ForwardAgent yes`
+    // forwards that agent; an explicit path or `$VAR` overrides it.
+    let forward_agent = match options.value("forwardagent") {
+        None => None,
+        Some(value) if value.eq_ignore_ascii_case("no") => None,
+        Some(value) if value.eq_ignore_ascii_case("yes") => match &agent {
+            SshConfigAgent::Disabled => None,
+            agent => Some(agent.clone()),
+        },
+        Some(value) => Some(agent_socket(value)),
     };
     let known_hosts_files = match options.values("userknownhostsfile") {
         Some([only]) if only.eq_ignore_ascii_case("none") => Vec::new(),
@@ -367,6 +382,7 @@ pub fn resolve_host(
             .value("identitiesonly")
             .is_some_and(|value| value.eq_ignore_ascii_case("yes")),
         agent,
+        forward_agent,
         known_hosts_files,
         connect_timeout_seconds,
         proxy_jump,

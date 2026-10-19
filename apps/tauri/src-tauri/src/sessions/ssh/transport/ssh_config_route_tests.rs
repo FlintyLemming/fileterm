@@ -284,3 +284,24 @@ async fn real_openssh_ssh_config_alias_signs_with_agent_from_public_key() {
     let _ = agent_process.wait();
     let _ = std::fs::remove_dir_all(home);
 }
+
+#[test]
+fn ssh_config_forward_agent_reaches_target_profile() {
+    let (_home, environment) = ssh_config_test_environment(
+        "Host fwd\n  HostName 192.0.2.5\n  ForwardAgent yes\nHost plain\n  HostName 192.0.2.6\n",
+    );
+    let profile = |alias: &str| {
+        serde_json::json!({
+            "id": alias,
+            "type": "ssh",
+            "name": alias,
+            "host": alias,
+            "authType": "sshConfig",
+        })
+    };
+    let route = super::expand_ssh_config_route_with(vec![profile("fwd")], &environment).unwrap();
+    assert_eq!(route[0]["sshConfigResolved"]["forwardAgent"], true);
+    assert_eq!(super::ssh_config_agent_forwarding(&route[0]), Some(None));
+    let route = super::expand_ssh_config_route_with(vec![profile("plain")], &environment).unwrap();
+    assert_eq!(super::ssh_config_agent_forwarding(&route[0]), None);
+}

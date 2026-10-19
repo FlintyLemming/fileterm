@@ -118,6 +118,7 @@ async fn run_worker_loop(
             startup_started_at.elapsed().as_millis()
         ),
     );
+    let agent_forwarding = session.agent_forwarding;
     let remote_sshid = session.remote_sshid;
     let disconnect_reason = session.disconnect_reason;
     let _session_cleanup = session.cleanup;
@@ -154,6 +155,18 @@ async fn run_worker_loop(
         handle.channel_open_session(),
     )
     .await?;
+    if agent_forwarding {
+        // Like `ssh -A`: the remote side opens auth-agent channels back to us,
+        // which the client handler bridges to the local agent.
+        wait_for_shell_startup_step(
+            "request_agent_forward",
+            shell_startup_timeout,
+            &cancellation,
+            shell_channel.agent_forward(false),
+        )
+        .await?;
+        crate::services::logging::session(app, "INFO", "ssh", tab_id, "agent forwarding requested");
+    }
     wait_for_shell_startup_step(
         "request_pty",
         shell_startup_timeout,

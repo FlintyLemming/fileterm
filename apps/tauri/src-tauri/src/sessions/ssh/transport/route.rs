@@ -219,7 +219,11 @@ async fn open_session(
             format!("SSH hop {} ({name}): {error}", index + 1)
         })?;
     }
+    let agent_forwarding = route
+        .last()
+        .is_some_and(|target| ssh_config_agent_forwarding(target).is_some());
     Ok(OpenSshSession {
+        agent_forwarding,
         handle: cleanup.handles.last().unwrap().clone(),
         cleanup,
         remote_sshid,
