@@ -23,6 +23,7 @@ export type SettingsTab =
   | 'agent'
   | 'connections'
   | 'interface'
+  | 'layout'
   | 'local-terminal'
   | 'security'
   | 'sync'
@@ -50,6 +51,7 @@ export type SettingsSidebarItem = {
 
 export const SETTINGS_SIDEBAR_ITEMS: SettingsSidebarItem[] = [
   { tab: 'interface', labelKey: 'interfaceSettings', materialIcon: 'palette' },
+  { tab: 'layout', labelKey: 'layoutSettings', materialIcon: 'space_dashboard' },
   { tab: 'local-terminal', labelKey: 'localTerminalSettings', appIcon: 'terminal-file' },
   { tab: 'ai', labelKey: 'aiSettings', materialIcon: 'auto_awesome' },
   { tab: 'agent', labelKey: 'agentMcpSettings', appIcon: 'terminal-file' },
@@ -65,6 +67,7 @@ export const SETTINGS_SIDEBAR_ITEMS: SettingsSidebarItem[] = [
 export const SETTINGS_TAB_SEARCH_TERMS: Record<SettingsTab, string> = {
   interface:
     'appearance overview theme color font ui window startup size menu bar tray icon macos 外观 概览 主题 颜色 字体 窗口 启动 大小 菜单栏 托盘 图标',
+  layout: 'layout tab tabs host group row sidebar 布局 标签 标签页 二级 主机 分组 单行 侧栏',
   'local-terminal': 'terminal shell powershell pwsh bash zsh fish nushell 本地终端 shell',
   ai: 'ai provider model api key openai anthropic 模型 服务 密钥',
   agent: 'agent mcp cli command tool automation 代理 命令 工具',

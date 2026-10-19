@@ -4,6 +4,7 @@ import { SETTINGS_SIDEBAR_ITEMS, SETTINGS_TAB_SEARCH_TERMS } from '../constants'
 import { useAiSettingsController } from './ai'
 import { useAgentSettingsController } from './agent'
 import { useSettingsModalEffects } from './effects'
+import { useLayoutSettingsController } from './layout'
 import { useOverviewSettingsController } from './overview'
 import { useSettingsPreferencesController } from './preferences'
 import { useSettingsSecurityController } from './security'
@@ -39,6 +40,7 @@ export function useSettingsModalController(options: SettingsModalControllerOptio
     options
   })
   const overview = useOverviewSettingsController({ state })
+  const layout = useLayoutSettingsController({ state })
   const ai = useAiSettingsController({ state, desktopApi })
   const agent = useAgentSettingsController({ state, onLaunchLocalAgent })
   const security = useSettingsSecurityController({ state })
@@ -62,6 +64,7 @@ export function useSettingsModalController(options: SettingsModalControllerOptio
     onSetLocale: options.onSetLocale,
     ...theme,
     ...overview,
+    ...layout,
     ...ai,
     ...agent,
     ...sync,
