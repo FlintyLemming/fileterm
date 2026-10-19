@@ -148,12 +148,12 @@ textarea:focus-visible,
 
 .fs-shell {
   grid-template-columns: var(--sidebar-width, 214px) minmax(0, 1fr) auto;
-  grid-template-rows: 48px minmax(0, 1fr) 24px;
+  grid-template-rows: var(--window-tabbar-height) minmax(0, 1fr) 24px;
   transition: grid-template-columns 0.24s linear;
 }
 
 .fs-shell.has-window-menubar {
-  grid-template-rows: var(--window-menubar-height, 28px) var(--window-tabbar-height, 48px) minmax(0, 1fr) 24px;
+  grid-template-rows: var(--window-menubar-height, 28px) var(--window-tabbar-height) minmax(0, 1fr) 24px;
 }
 
 .fs-sidebar {
@@ -206,7 +206,7 @@ textarea:focus-visible,
   grid-column: 1 / -1;
   grid-row: 1;
   grid-template-columns: var(--brand-width, 214px) minmax(0, 1fr);
-  height: 48px;
+  height: var(--window-tabbar-height);
   z-index: 10;
   position: relative;
   transition: grid-template-columns 0.24s linear;
@@ -259,7 +259,7 @@ textarea:focus-visible,
 .fs-tab {
   min-width: 132px;
   max-width: 190px;
-  height: 48px;
+  height: var(--window-tabbar-height);
   padding: 0 13px;
   border: 0;
   border-radius: 0;

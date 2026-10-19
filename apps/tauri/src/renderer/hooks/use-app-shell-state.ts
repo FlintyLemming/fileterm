@@ -28,6 +28,7 @@ import { resolveRendererPlatform } from '../lib/renderer-platform'
 import { useWorkspaceIpcSync } from './use-workspace-ipc-sync'
 import { useSessionSecurity } from './use-session-security'
 import { useThemeMode, type ThemeMode } from './use-theme-mode'
+import { useTabBarLayout } from '../features/layout/use-tab-bar-layout'
 import {
   DEFAULT_FILE_PANEL_SNAP_TARGET,
   isFilePanelSnapTarget,
@@ -45,6 +46,7 @@ export type InitialUiPreferences = Pick<
   | 'uiZoomLocked'
   | 'uiZoomPercent'
   | 'rememberWindowSize'
+  | 'tabBarLayout'
   | 'filePanelRememberRatio'
   | 'resourceMonitoringMetrics'
   | 'resourceMonitoringMetricOrder'
@@ -139,6 +141,7 @@ export function useAppShellState({
     () => initialUiPreferences?.uiZoomPercent ?? DEFAULT_UI_ZOOM_PERCENT
   )
   const [rememberWindowSize, setRememberWindowSize] = useState(() => initialUiPreferences?.rememberWindowSize ?? false)
+  const [tabBarLayout] = useTabBarLayout(desktopApi, initialUiPreferences?.tabBarLayout)
   useLayoutEffect(() => {
     void applyUiZoomPercent(uiZoomPercent)
   }, [uiZoomPercent])
@@ -510,6 +513,7 @@ export function useAppShellState({
     setUiZoomPercent,
     rememberWindowSize,
     setRememberWindowSize,
+    tabBarLayout,
     filePanelRememberRatio,
     setFilePanelRememberRatio,
     resourceMonitoringMetrics,

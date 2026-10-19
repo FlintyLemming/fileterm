@@ -8,8 +8,8 @@
   min-height: 0;
   z-index: 10;
   border-right: 1px solid var(--border-light);
-  background: var(--theme-sidebar-background, var(--bg-sidebar));
-  color: var(--text-main);
+  background: var(--theme-sidebar-background, var(--surface-sidebar));
+  color: var(--text-primary);
 }
 
 .fs-shell.has-window-menubar .fs-host-rail {
@@ -72,13 +72,13 @@
 }
 
 .host-group-item:hover {
-  color: var(--text-main);
-  background: var(--bg-hover);
+  color: var(--text-primary);
+  background: var(--surface-hover);
 }
 
 .host-group-item.is-active {
-  color: var(--text-main);
-  background: var(--bg-active);
+  color: var(--text-primary);
+  background: var(--surface-active);
   border-color: var(--border-light);
 }
 
@@ -93,7 +93,7 @@
 }
 
 .host-group-item.is-active .host-group-icon {
-  color: var(--sidebar-active-accent, var(--theme-accent));
+  color: var(--sidebar-active-accent);
 }
 
 .host-group-text {
@@ -123,7 +123,7 @@
   padding: 0 5px;
   border-radius: 9px;
   color: var(--text-muted);
-  background: var(--bg-hover);
+  background: var(--surface-hover);
   font-size: 11px;
   line-height: 18px;
   text-align: center;
